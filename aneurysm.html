@@ -84,7 +84,13 @@ input[type=number] { width:7em; font:inherit; font-family:var(--font-mono); padd
       </div>
     </div>
     <div class="field"><span>Age (years)</span><input id="age" type="number" min="1" max="110" step="1" value="55" inputmode="numeric"></div>
-    <div class="field"><span>Expected remaining years of life <small>(for lifetime risk; e.g., from the <a href="https://www.ssa.gov/oact/STATS/table4c6.html" target="_blank" rel="noopener">SSA life table</a>, adjusted for health)</small></span><input id="ly" type="number" min="1" max="90" step="1" placeholder="e.g. 28" inputmode="numeric"></div>
+    <div class="field"><span>Sex <small>(for life expectancy)</small></span>
+      <div class="seg">
+        <label><input type="radio" name="sex" value="m" id="x_m"><span>Male</span></label>
+        <label><input type="radio" name="sex" value="f" id="x_f" checked><span>Female</span></label>
+      </div>
+    </div>
+    <div class="field"><span>Remaining years of life <small>(filled from the US life table for age and sex; type a different number to adjust for health)</small></span><input id="ly" type="number" min="1" max="90" step="1" inputmode="numeric"><small id="lyNote"></small></div>
     <div class="field"><span>Prior SAH from another aneurysm</span>
       <div class="seg">
         <label><input type="radio" name="sah" value="0" id="e0" checked><span>No</span></label>
@@ -114,7 +120,7 @@ input[type=number] { width:7em; font:inherit; font-family:var(--font-mono); padd
   <div class="notes">
     <p>PHASES (Greving et al., Lancet Neurol 2014): population, hypertension, age, size, earlier SAH, site; 5-year absolute rupture risk by total score. Developed in intradural aneurysms.</p>
     <p>ISUIA (Wiebers et al., Lancet 2003): 5-year cumulative rupture rates by size and location. Anterior circulation (ICA, ACA/ACom, MCA): 0%, 2.6%, 14.5%, 40% for &lt;7, 7–12, 13–24, ≥25 mm. Posterior circulation and PCom: 2.5%, 14.5%, 18.4%, 50%. Prior SAH from another aneurysm raises the &lt;7 mm rates to 1.5% (anterior) and 3.4% (posterior). Cavernous carotid: 0%, 0%, 3.0%, 6.4%.</p>
-    <p>Annual risk = 1 − (1 − 5-year risk)^(1/5). Lifetime risk = 1 − (1 − annual risk)^(remaining years), assuming a constant annual risk. These are population estimates; they do not include shape, growth or other risk factors, and extrapolating 5-year data over decades adds uncertainty.</p>
+    <p>Life expectancy: US Social Security Administration 2023 period life table (2026 Trustees Report), by exact age and sex. Annual risk = 1 − (1 − 5-year risk)^(1/5). Lifetime risk = 1 − (1 − annual risk)^(remaining years), assuming a constant annual risk. These are population estimates; they do not include shape, growth or other risk factors, and extrapolating 5-year data over decades adds uncertainty.</p>
   </div>
 </div>
 
@@ -128,7 +134,13 @@ input[type=number] { width:7em; font:inherit; font-family:var(--font-mono); padd
     var size = parseFloat(document.getElementById("size").value);
     var site = val("site"), pop = +val("pop"), htn = +val("htn"), sah = +val("sah");
     var ageYrs = parseFloat(document.getElementById("age").value); var age = (!isNaN(ageYrs) && ageYrs >= 70) ? 1 : 0;
-    var ly = parseFloat(document.getElementById("ly").value);
+    var LE = { m:[75.79, 75.25, 74.28, 73.31, 72.33, 71.34, 70.35, 69.36, 68.37, 67.38, 66.39, 65.39, 64.4, 63.41, 62.43, 61.45, 60.48, 59.51, 58.56, 57.62, 56.69, 55.76, 54.83, 53.9, 52.98, 52.06, 51.14, 50.23, 49.32, 48.41, 47.5, 46.6, 45.7, 44.81, 43.91, 43.02, 42.13, 41.24, 40.36, 39.47, 38.59, 37.71, 36.83, 35.95, 35.08, 34.21, 33.34, 32.48, 31.62, 30.76, 29.9, 29.05, 28.21, 27.38, 26.55, 25.73, 24.92, 24.12, 23.34, 22.56, 21.79, 21.04, 20.29, 19.56, 18.83, 18.12, 17.41, 16.71, 16.02, 15.34, 14.66, 14.0, 13.34, 12.69, 12.05, 11.42, 10.8, 10.19, 9.61, 9.04, 8.5, 7.97, 7.46, 6.97, 6.5, 6.04, 5.61, 5.2, 4.81, 4.45, 4.11, 3.8, 3.5, 3.23, 2.99, 2.77, 2.58, 2.41, 2.27, 2.15, 2.04], f:[81.06, 80.48, 79.51, 78.53, 77.54, 76.55, 75.56, 74.57, 73.58, 72.59, 71.59, 70.6, 69.61, 68.62, 67.63, 66.64, 65.66, 64.67, 63.69, 62.72, 61.74, 60.77, 59.8, 58.83, 57.86, 56.9, 55.93, 54.97, 54.0, 53.04, 52.08, 51.13, 50.18, 49.23, 48.28, 47.34, 46.39, 45.45, 44.51, 43.58, 42.64, 41.71, 40.78, 39.86, 38.93, 38.01, 37.1, 36.18, 35.27, 34.36, 33.45, 32.55, 31.66, 30.77, 29.89, 29.01, 28.14, 27.28, 26.42, 25.57, 24.73, 23.9, 23.08, 22.27, 21.46, 20.66, 19.87, 19.08, 18.3, 17.53, 16.76, 16.01, 15.26, 14.53, 13.81, 13.1, 12.41, 11.73, 11.08, 10.44, 9.82, 9.22, 8.64, 8.08, 7.54, 7.02, 6.53, 6.05, 5.61, 5.19, 4.8, 4.44, 4.1, 3.79, 3.5, 3.23, 2.99, 2.77, 2.57, 2.39, 2.23] };
+    var sex = val("sex") || "f";
+    var lyEl = document.getElementById("ly");
+    var autoLy = (!isNaN(ageYrs) && ageYrs >= 0) ? LE[sex][Math.min(Math.round(ageYrs), 100)] : NaN;
+    if (!lyEl.dataset.manual && !isNaN(autoLy)) lyEl.value = Math.round(autoLy);
+    document.getElementById("lyNote").textContent = isNaN(autoLy) ? "" : "US life table: " + autoLy.toFixed(1) + " years" + (lyEl.dataset.manual ? " (you entered a different value)" : "");
+    var ly = parseFloat(lyEl.value);
     var flag = document.getElementById("flag");
     if (isNaN(size) || size <= 0) {
       ["phV","isV","lfV"].forEach(function (id) { document.getElementById(id).textContent = "–"; });
@@ -177,7 +189,8 @@ input[type=number] { width:7em; font:inherit; font-family:var(--font-mono); padd
     try { navigator.clipboard.writeText(el.textContent).then(function () { msg.textContent = "Copied"; msg.hidden = false; }, sel); } catch (e) { sel(); }
   }
   document.addEventListener("change", compute);
-  ["size","age","ly"].forEach(function (id) { document.getElementById(id).addEventListener("input", compute); });
+  ["size","age"].forEach(function (id) { document.getElementById(id).addEventListener("input", compute); });
+  document.getElementById("ly").addEventListener("input", function () { this.dataset.manual = this.value ? "1" : ""; compute(); });
   document.getElementById("cAP").addEventListener("click", function () { copy("outAP"); });
   document.getElementById("cImg").addEventListener("click", function () { copy("outImg"); });
   compute();
