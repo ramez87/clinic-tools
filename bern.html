@@ -87,7 +87,7 @@ input[type=number] { width:7em; font:inherit; font-family:var(--font-mono); padd
 (function () {
   var ITEMS = [
     { id:"pe",  grp:"Major (2 points each)", name:"Pachymeningeal enhancement", pts:2 },
-    { id:"vs",  name:"Venous sinus engorgement", pts:2 },
+    { id:"vs",  name:"Venous sinus engorgement", hint:"Venous distension sign: convex lower border of the dominant transverse sinus on sagittal T1", pts:2 },
     { id:"ssc", name:"Suprasellar cistern effacement", hint:"4.0 mm or less", pts:2, cut:4.0 },
     { id:"sdc", grp:"Minor (1 point each)", name:"Subdural fluid collection", pts:1 },
     { id:"ppc", name:"Prepontine cistern effacement", hint:"5.0 mm or less", pts:1, cut:5.0 },
@@ -118,13 +118,13 @@ input[type=number] { width:7em; font:inherit; font-family:var(--font-mono); padd
       if (i === 0) lines.push("Major findings (2 points each)");
       if (i === 3) lines.push("Minor findings (1 point each)");
       var mm = it.cut ? document.getElementById(it.id + "_mm").value : "";
-      var label = it.name + (it.hint ? ", " + it.hint : "") + (mm ? " (measured " + mm + " mm)" : "");
+      var label = it.name + (it.cut ? ", " + it.hint : "") + (mm ? " (measured " + mm + " mm)" : "");
       lines.push("- " + label + ": " + (yes ? "yes" : "no"));
     });
     var prob = tot <= 2 ? "low" : tot <= 4 ? "intermediate" : "high";
     document.getElementById("tot").textContent = tot + " /9";
     document.getElementById("prob").textContent = prob.charAt(0).toUpperCase() + prob.slice(1) + " probability of a spinal CSF leak";
-    document.getElementById("out").textContent = "Brain MRI findings of spontaneous intracranial hypotension (Bern score, Dobrocky et al., JAMA Neurology 2019):\n" + lines.join("\n") + "\nBern score: " + tot + "/9, indicating " + (prob === "intermediate" ? "an " : "a ") + prob + " probability of a spinal CSF leak (low 0-2, intermediate 3-4, high 5-9).";
+    document.getElementById("out").textContent = "Upon review of the brain MRI for findings of spontaneous intracranial hypotension, the Bern score (Dobrocky et al., JAMA Neurology 2019) is " + tot + "/9, indicating " + (prob === "intermediate" ? "an " : "a ") + prob + " probability of a spinal CSF leak (low 0-2, intermediate 3-4, high 5-9).";
   }
   document.addEventListener("change", compute);
   document.getElementById("reset").addEventListener("click", function () {
