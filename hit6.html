@@ -112,7 +112,7 @@ input[type=number] { width:7em; font:inherit; font-family:var(--font-mono); padd
     cat.textContent = c.charAt(0).toUpperCase() + c.slice(1) + " impact";
     var p = parseInt(document.getElementById("prev").value, 10), extra = "";
     if (p >= 36 && p <= 78) extra = "; previously " + p + "/78, change " + (tot - p > 0 ? "+" : "") + (tot - p);
-    out.textContent = "Headache Impact Test (HIT-6): " + tot + "/78 (" + c + " impact" + extra + ")";
+    out.textContent = "Headache Impact Test (HIT-6): " + tot + "/78 (" + c + " impact" + extra + "). Impact (HIT-6 Scoring Interpretation v1.1): 49 or less little to no impact; 50-55 some impact; 56-59 substantial impact; 60 or more very severe impact.";
   }
   document.addEventListener("change", compute);
   document.getElementById("prev").addEventListener("input", compute);
