@@ -1,0 +1,143 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Bern Score</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: inputs in one column, result panel below (sticky on wide screens), note-ready text at the bottom of the panel */
+:root {
+  --bg:#f4f6f8; --surface:#fff; --ink:#17212b; --muted:#5b6876; --line:#d9e0e7;
+  --accent:#0b6e74; --accent-ink:#fff; --accent-soft:#dcefef; --warn:#b7791f;
+  --font-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark) { :root { --bg:#11171d; --surface:#1a232c; --ink:#e6edf3; --muted:#9aa8b6; --line:#2c3946; --accent:#4fb9bd; --accent-ink:#0b1a1c; --accent-soft:#1d3a3c; --warn:#e0a94e; color-scheme:dark; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:15px; line-height:1.45; padding-inline:16px; padding-block:20px 32px; }
+.wrap { max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
+a.back { color:var(--accent); font-size:.9rem; }
+h1 { font-size:1.35rem; margin:4px 0 0; }
+.sub { color:var(--muted); margin:0; max-width:64ch; }
+.card { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; gap:14px; }
+.field { display:flex; flex-direction:column; gap:6px; }
+.field > span { font-weight:700; }
+.field small { color:var(--muted); font-weight:400; }
+.field small a { color:var(--accent); }
+.seg { display:flex; flex-wrap:wrap; gap:6px; }
+.seg label { position:relative; }
+.seg input { position:absolute; opacity:0; inset:0; }
+.seg span { display:block; padding:7px 12px; border:1px solid var(--line); border-radius:6px; font-size:.9rem; cursor:pointer; user-select:none; }
+.seg input:checked + span { background:var(--accent-soft); border-color:var(--accent); font-weight:700; }
+.seg input:focus-visible + span, .btn:focus-visible, input[type=number]:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+input[type=number] { width:7em; font:inherit; font-family:var(--font-mono); padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); }
+.result { gap:10px; }
+@media (min-width:760px) and (min-height:820px) { .result { position:sticky; top:env(safe-area-inset-top,0px); z-index:2; } }
+.scores { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; }
+.score { border:1px solid var(--line); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; min-width:0; }
+.score .lbl { font-size:.8rem; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; }
+.score .val { font-family:var(--font-mono); font-size:1.6rem; font-weight:600; font-variant-numeric:tabular-nums; }
+.score .det { font-size:.85rem; color:var(--muted); }
+.flag { color:var(--warn); font-size:.85rem; font-weight:700; }
+.out { font-family:var(--font-mono); font-size:.82rem; background:var(--bg); border:1px dashed var(--line); border-radius:6px; padding:8px 10px; white-space:pre-wrap; overflow-wrap:anywhere; user-select:all; }
+.outlbl { font-size:.8rem; color:var(--muted); margin-bottom:-6px; }
+.actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.btn { font:inherit; cursor:pointer; padding:8px 14px; border-radius:7px; border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink); font-weight:700; }
+.btn.ghost { background:transparent; color:var(--accent); }
+.notes { font-size:.85rem; color:var(--muted); display:flex; flex-direction:column; gap:6px; max-width:72ch; }
+.notes p { margin:0; }
+</style>
+<style>
+.item { display:grid; grid-template-columns:1fr auto; gap:6px 12px; align-items:center; padding-block:8px; border-bottom:1px solid var(--line); }
+.item:last-child { border-bottom:0; }
+.item .name { font-weight:700; min-width:0; }
+.item .name small { display:block; color:var(--muted); font-weight:400; }
+.item .mm { grid-column:1 / -1; display:flex; align-items:center; gap:8px; font-size:.9rem; color:var(--muted); }
+.grp { font-size:.8rem; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="./">&larr; Clinic tools</a>
+    <h1>Bern score</h1>
+    <p class="sub">Brain MRI score for spontaneous intracranial hypotension: probability of a spinal CSF leak. Nothing entered is saved or sent.</p>
+  </header>
+  <section class="card" id="items" aria-label="MRI findings"></section>
+  <section class="card result" aria-live="polite">
+    <div class="scores">
+      <div class="score"><span class="lbl">Bern score</span><span class="val" id="tot">0 /9</span><span class="det" id="prob"></span></div>
+    </div>
+    <div class="outlbl">For the note:</div>
+    <div class="out" id="out"></div>
+    <div class="actions">
+      <button class="btn" type="button" id="copy">Copy for note</button>
+      <button class="btn ghost" type="button" id="reset">Reset</button>
+      <span id="msg" class="det" hidden></span>
+    </div>
+  </section>
+  <div class="notes">
+    <p>Dobrocky T, et al. Assessing spinal cerebrospinal fluid leaks in spontaneous intracranial hypotension with a scoring system based on brain MRI findings. JAMA Neurol 2019;76(5):580-587.</p>
+    <p>Major findings 2 points each; minor findings 1 point each; total 0-9. Probability of a spinal CSF leak: low 0-2, intermediate 3-4, high 5-9. Entering a measurement fills Yes or No from the cutoff; you can still change it.</p>
+  </div>
+</div>
+<script>
+(function () {
+  var ITEMS = [
+    { id:"pe",  grp:"Major (2 points each)", name:"Pachymeningeal enhancement", pts:2 },
+    { id:"vs",  name:"Venous sinus engorgement", pts:2 },
+    { id:"ssc", name:"Suprasellar cistern effacement", hint:"4.0 mm or less", pts:2, cut:4.0 },
+    { id:"sdc", grp:"Minor (1 point each)", name:"Subdural fluid collection", pts:1 },
+    { id:"ppc", name:"Prepontine cistern effacement", hint:"5.0 mm or less", pts:1, cut:5.0 },
+    { id:"mpd", name:"Mamillopontine distance", hint:"6.5 mm or less", pts:1, cut:6.5 }
+  ];
+  var box = document.getElementById("items");
+  ITEMS.forEach(function (it) {
+    if (it.grp) { var g = document.createElement("div"); g.className = "grp"; g.textContent = it.grp; box.appendChild(g); }
+    var d = document.createElement("div"); d.className = "item";
+    d.innerHTML = '<div class="name">' + it.name + (it.hint ? '<small>' + it.hint + '</small>' : '') + '</div>' +
+      '<div class="seg"><label><input type="radio" name="' + it.id + '" value="0" id="' + it.id + '_n" checked><span>No</span></label>' +
+      '<label><input type="radio" name="' + it.id + '" value="' + it.pts + '" id="' + it.id + '_y"><span>Yes</span></label></div>' +
+      (it.cut ? '<div class="mm"><label for="' + it.id + '_mm">Measured</label><input type="number" id="' + it.id + '_mm" min="0" max="30" step="0.1" inputmode="decimal"> mm</div>' : '');
+    box.appendChild(d);
+    if (it.cut) {
+      d.querySelector("#" + it.id + "_mm").addEventListener("input", function () {
+        var v = parseFloat(this.value);
+        if (!isNaN(v)) document.getElementById(it.id + (v <= it.cut ? "_y" : "_n")).checked = true;
+        compute();
+      });
+    }
+  });
+  function compute() {
+    var tot = 0, lines = [];
+    ITEMS.forEach(function (it, i) {
+      var yes = document.getElementById(it.id + "_y").checked;
+      if (yes) tot += it.pts;
+      if (i === 0) lines.push("Major findings (2 points each)");
+      if (i === 3) lines.push("Minor findings (1 point each)");
+      var mm = it.cut ? document.getElementById(it.id + "_mm").value : "";
+      var label = it.name + (it.hint ? ", " + it.hint : "") + (mm ? " (measured " + mm + " mm)" : "");
+      lines.push("- " + label + ": " + (yes ? "yes" : "no"));
+    });
+    var prob = tot <= 2 ? "low" : tot <= 4 ? "intermediate" : "high";
+    document.getElementById("tot").textContent = tot + " /9";
+    document.getElementById("prob").textContent = prob.charAt(0).toUpperCase() + prob.slice(1) + " probability of a spinal CSF leak";
+    document.getElementById("out").textContent = "Brain MRI findings of spontaneous intracranial hypotension (Bern score, Dobrocky et al., JAMA Neurology 2019):\n" + lines.join("\n") + "\nBern score: " + tot + "/9, indicating " + (prob === "intermediate" ? "an " : "a ") + prob + " probability of a spinal CSF leak (low 0-2, intermediate 3-4, high 5-9).";
+  }
+  document.addEventListener("change", compute);
+  document.getElementById("reset").addEventListener("click", function () {
+    ITEMS.forEach(function (it) { document.getElementById(it.id + "_n").checked = true; if (it.cut) document.getElementById(it.id + "_mm").value = ""; });
+    document.getElementById("msg").hidden = true; compute();
+  });
+  document.getElementById("copy").addEventListener("click", function () {
+    var el = document.getElementById("out"), msg = document.getElementById("msg");
+    function sel() { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); msg.textContent = "Selected - press Ctrl+C"; msg.hidden = false; }
+    try { navigator.clipboard.writeText(el.textContent).then(function () { msg.textContent = "Copied"; msg.hidden = false; }, sel); } catch (e) { sel(); }
+  });
+  compute();
+})();
+</script>
+</body>
+</html>
