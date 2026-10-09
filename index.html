@@ -1,0 +1,32 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>NIR Clinic Tools</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+:root { --bg:#f4f6f8; --surface:#fff; --ink:#17212b; --muted:#5b6876; --line:#d9e0e7; --accent:#0b6e74; }
+@media (prefers-color-scheme: dark) { :root { --bg:#11171d; --surface:#1a232c; --ink:#e6edf3; --muted:#9aa8b6; --line:#2c3946; --accent:#4fb9bd; color-scheme: dark; } }
+* { box-sizing: border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif; padding-inline:16px; padding-block:28px; }
+main { max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+h1 { margin:0; font-size:1.4rem; }
+p { margin:0; color:var(--muted); }
+.tool { display:block; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 16px; text-decoration:none; color:var(--ink); }
+.tool:hover, .tool:focus-visible { border-color:var(--accent); outline:none; }
+.tool b { color:var(--accent); }
+.soon { opacity:.6; }
+</style>
+</head>
+<body>
+<main>
+  <h1>Neurointerventional clinic tools</h1>
+  <p>Scoring tools for clinic visits. Nothing entered here is saved or sent anywhere.</p>
+  <a class="tool" href="thi.html"><b>Tinnitus Handicap Inventory (THI)</b><br>25 questions, total 0–100 with grade and a line to paste into the note.</a>
+  <a class="tool" href="aneurysm.html"><b>Unruptured aneurysm rupture risk</b><br>PHASES, ISUIA and estimated lifetime risk, with text for the aneurysm note.</a>
+  <div class="tool soon"><b>Pain scores for vertebral augmentation</b><br>Coming soon.</div>
+</main>
+</body>
+</html>

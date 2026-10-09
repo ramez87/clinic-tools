@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>THI Scorer</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: sticky result panel on top, 25 compact answer rows below; works one-handed on a phone or beside Epic on a desktop */
+:root {
+  --bg: #f4f6f8;
+  --surface: #ffffff;
+  --ink: #17212b;
+  --muted: #5b6876;
+  --line: #d9e0e7;
+  --accent: #0b6e74;
+  --accent-ink: #ffffff;
+  --accent-soft: #dcefef;
+  --g1: #2e7d4f; --g2: #6a8f1f; --g3: #b7791f; --g4: #c2552d; --g5: #a3283b;
+  --font-body: "Atkinson Hyperlegible", "Segoe UI", system-ui, sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #11171d; --surface: #1a232c; --ink: #e6edf3; --muted: #9aa8b6; --line: #2c3946;
+    --accent: #4fb9bd; --accent-ink: #0b1a1c; --accent-soft: #1d3a3c;
+    --g1: #5cc189; --g2: #a6c75a; --g3: #e0a94e; --g4: #ec8a63; --g5: #ef7486;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #11171d; --surface: #1a232c; --ink: #e6edf3; --muted: #9aa8b6; --line: #2c3946;
+  --accent: #4fb9bd; --accent-ink: #0b1a1c; --accent-soft: #1d3a3c;
+  --g1: #5cc189; --g2: #a6c75a; --g3: #e0a94e; --g4: #ec8a63; --g5: #ef7486;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.45; padding-inline: 16px; padding-block: 0 32px; }
+.wrap { max-width: 760px; margin: 0 auto; display: flex; flex-direction: column; gap: 16px; }
+header.top { padding-top: 20px; display: flex; flex-direction: column; gap: 4px; }
+h1 { font-size: 1.35rem; margin: 0; text-wrap: balance; }
+.sub { color: var(--muted); margin: 0; max-width: 62ch; }
+@media (min-width: 700px) and (min-height: 760px) { .result { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 2; } }
+.result { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; padding: 14px 16px; display: flex; flex-direction: column; gap: 10px; box-shadow: 0 2px 10px rgba(0,0,0,.06); }
+.score-row { display: flex; flex-wrap: wrap; align-items: baseline; gap: 6px 18px; }
+.total { font-family: var(--font-mono); font-size: 2.2rem; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1; }
+.total small { font-size: 1rem; color: var(--muted); font-weight: 400; }
+.grade { font-weight: 700; padding: 3px 10px; border-radius: 999px; border: 2px solid currentColor; font-size: .95rem; }
+.subs { display: flex; flex-wrap: wrap; gap: 4px 16px; font-family: var(--font-mono); font-size: .85rem; color: var(--muted); font-variant-numeric: tabular-nums; }
+.progress { font-size: .85rem; color: var(--muted); }
+.progress.warn { color: var(--g4); font-weight: 700; }
+.baseline { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; font-size: .9rem; }
+.baseline input { width: 5.5em; font: inherit; font-family: var(--font-mono); padding: 5px 8px; border: 1px solid var(--line); border-radius: 6px; background: var(--bg); color: var(--ink); }
+.out { font-family: var(--font-mono); font-size: .82rem; background: var(--bg); border: 1px dashed var(--line); border-radius: 6px; padding: 8px 10px; white-space: pre-wrap; overflow-wrap: anywhere; user-select: all; }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+button { font: inherit; cursor: pointer; }
+.btn { padding: 8px 14px; border-radius: 7px; border: 1px solid var(--accent); background: var(--accent); color: var(--accent-ink); font-weight: 700; }
+.btn.ghost { background: transparent; color: var(--accent); }
+.btn:focus-visible, .seg input:focus-visible + span { outline: 3px solid var(--accent); outline-offset: 2px; }
+.items { background: var(--surface); border: 1px solid var(--line); border-radius: 10px; }
+.legend { display: flex; flex-wrap: wrap; justify-content: space-between; gap: 6px 12px; padding: 10px 14px; border-bottom: 1px solid var(--line); font-size: .82rem; color: var(--muted); }
+.row { display: grid; grid-template-columns: 2.4rem 2rem 1fr; align-items: center; gap: 8px; padding: 6px 14px; border-bottom: 1px solid var(--line); }
+.row:last-child { border-bottom: 0; }
+.row.hasq { grid-template-columns: 2.4rem 2rem 1fr; }
+.row.hasq .qtext { grid-column: 3; margin: 0; font-size: .95rem; min-width: 0; }
+.row.hasq .seg { grid-column: 3; }
+.num { font-family: var(--font-mono); font-weight: 600; font-variant-numeric: tabular-nums; }
+.sc { font-family: var(--font-mono); font-size: .75rem; color: var(--muted); letter-spacing: .04em; }
+.seg { display: grid; grid-template-columns: repeat(3, 1fr); gap: 6px; min-width: 0; }
+.seg label { position: relative; }
+.seg input { position: absolute; opacity: 0; inset: 0; }
+.seg span { display: block; text-align: center; padding: 7px 4px; border: 1px solid var(--line); border-radius: 6px; font-size: .88rem; user-select: none; }
+.seg input:checked + span { background: var(--accent-soft); border-color: var(--accent); color: var(--ink); font-weight: 700; }
+.seg span b { font-family: var(--font-mono); font-weight: 400; color: var(--muted); margin-left: 4px; }
+.notes { font-size: .85rem; color: var(--muted); display: flex; flex-direction: column; gap: 6px; max-width: 70ch; }
+.notes p { margin: 0; }
+@media (max-width: 420px) { .seg span b { display: none; } .total { font-size: 1.9rem; } }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+</head>
+<body>
+
+<div class="wrap">
+  <header class="top"><a href="./" style="color:var(--accent);font-size:.9rem">&larr; Clinic tools</a>
+    <h1>Tinnitus Handicap Inventory scorer</h1>
+    <p class="sub">Tap the patient's answer to each question. The total, grade and a line for the note update as you go. Nothing is saved; reset clears everything.</p>
+  </header>
+
+  <section class="result" aria-live="polite">
+    <div class="score-row">
+      <div class="total" id="total">0<small> /100</small></div>
+      <span class="grade" id="grade">Grade 1 · slight</span>
+      <span class="progress" id="progress">0 of 25 answered</span>
+    </div>
+    <div class="subs" id="subs"></div>
+    <div class="baseline">
+      <label for="baseline">Baseline THI (optional)</label>
+      <input id="baseline" type="number" inputmode="numeric" min="0" max="100" step="2" placeholder="e.g. 58">
+      <span id="change"></span>
+    </div>
+    <div class="out" id="out"></div>
+    <div class="actions">
+      <button class="btn" id="copy" type="button">Copy for note</button>
+      <button class="btn ghost" id="reset" type="button">Reset</button>
+      <span class="progress" id="copied" hidden>Copied</span>
+    </div>
+  </section>
+
+  <section class="items" aria-label="THI answers">
+    <div class="legend"><span>Item · subscale (F functional, E emotional, C catastrophic)</span><span>Yes 4 · Sometimes 2 · No 0</span></div>
+    <div id="rows"></div>
+  </section>
+
+  <div class="notes">
+    <p>Scoring: Yes = 4, Sometimes = 2, No = 0; total 0–100. Grades (McCombe 2001): 0–16 slight or no handicap, 18–36 mild, 38–56 moderate, 58–76 severe, 78–100 catastrophic. A change of about 7 points or more is usually considered meaningful.</p>
+    <p id="qnote">THI: Newman, Jacobson and Spitzer, Arch Otolaryngol Head Neck Surg 1996 (© American Medical Association); listed by the PhenX Toolkit as freely available for use. Nothing entered on this page is saved or sent anywhere.</p>
+  </div>
+</div>
+
+<script>
+/* =====================================================================
+   PASTE THE 25 THI QUESTIONS HERE (one time).
+   Open this file in Notepad, replace each "" with the question text
+   from your department's THI form, keeping the quotes and commas.
+   Example:  "Because of your tinnitus, is it difficult for you to ...?",
+   Then save the file and open it in a browser.
+   ===================================================================== */
+var THI_QUESTIONS = [
+  "Because of your tinnitus, is it difficult for you to concentrate?",
+  "Does the loudness of your tinnitus make it difficult for you to hear people?",
+  "Does your tinnitus make you angry?",
+  "Does your tinnitus make you feel confused?",
+  "Because of your tinnitus, do you feel desperate?",
+  "Do you complain a great deal about your tinnitus?",
+  "Because of your tinnitus, do you have trouble falling to sleep at night?",
+  "Do you feel as though you cannot escape your tinnitus?",
+  "Does your tinnitus interfere with your ability to enjoy your social activities (such as going out to dinner, to the movies)?",
+  "Because of your tinnitus, do you feel frustrated?",
+  "Because of your tinnitus, do you feel that you have a terrible disease?",
+  "Does your tinnitus make it difficult for you to enjoy life?",
+  "Does your tinnitus interfere with your job or household responsibilities?",
+  "Because of your tinnitus, do you find that you are often irritable?",
+  "Because of your tinnitus, is it difficult for you to read?",
+  "Does your tinnitus make you upset?",
+  "Do you feel that your tinnitus problem has placed stress on your relationships with members of your family and friends?",
+  "Do you find it difficult to focus your attention away from your tinnitus and on other things?",
+  "Do you feel that you have no control over your tinnitus?",
+  "Because of your tinnitus, do you often feel tired?",
+  "Because of your tinnitus, do you feel depressed?",
+  "Does your tinnitus make you feel anxious?",
+  "Do you feel that you can no longer cope with your tinnitus?",
+  "Does your tinnitus get worse when you are under stress?",
+  "Does your tinnitus make you feel insecure?"
+];
+(function () {
+  var SUB = { F: [1,2,4,7,9,12,13,15,18,20,24], E: [3,5,6,10,14,16,17,21,22], C: [8,11,19,23,25] };
+  var subOf = {};
+  Object.keys(SUB).forEach(function (k) { SUB[k].forEach(function (n) { subOf[n] = k; }); });
+  var GRADES = [
+    { max: 16, n: 1, label: "slight or no", color: "var(--g1)" },
+    { max: 36, n: 2, label: "mild", color: "var(--g2)" },
+    { max: 56, n: 3, label: "moderate", color: "var(--g3)" },
+    { max: 76, n: 4, label: "severe", color: "var(--g4)" },
+    { max: 100, n: 5, label: "catastrophic", color: "var(--g5)" }
+  ];
+  var rows = document.getElementById("rows");
+  var opts = [["Yes", 4], ["Sometimes", 2], ["No", 0]];
+  for (var i = 1; i <= 25; i++) {
+    var row = document.createElement("div");
+    row.className = "row";
+    var q = (THI_QUESTIONS[i - 1] || "").trim();
+    var html = '<span class="num">' + i + '</span><span class="sc">' + subOf[i] + '</span>' + (q ? '<p class="qtext"></p>' : '') + '<div class="seg" role="radiogroup" aria-label="Item ' + i + '">';
+    opts.forEach(function (o) {
+      var id = "q" + i + "_" + o[1];
+      html += '<label for="' + id + '"><input type="radio" id="' + id + '" name="q' + i + '" value="' + o[1] + '"><span>' + o[0] + '<b>' + o[1] + '</b></span></label>';
+    });
+    row.innerHTML = html + "</div>";
+    if (q) { row.classList.add("hasq"); row.querySelector(".qtext").textContent = q; }
+    rows.appendChild(row);
+  }
+  function gradeFor(t) { for (var g = 0; g < GRADES.length; g++) if (t <= GRADES[g].max) return GRADES[g]; return GRADES[4]; }
+  function compute() {
+    var total = 0, answered = 0, sub = { F: 0, E: 0, C: 0 };
+    for (var i = 1; i <= 25; i++) {
+      var c = document.querySelector('input[name="q' + i + '"]:checked');
+      if (c) { var v = +c.value; total += v; sub[subOf[i]] += v; answered++; }
+    }
+    var g = gradeFor(total);
+    document.getElementById("total").innerHTML = total + "<small> /100</small>";
+    var ge = document.getElementById("grade");
+    ge.textContent = "Grade " + g.n + " · " + g.label;
+    ge.style.color = g.color;
+    var pr = document.getElementById("progress");
+    pr.textContent = answered + " of 25 answered";
+    pr.className = "progress" + (answered > 0 && answered < 25 ? " warn" : "");
+    document.getElementById("subs").textContent = "Functional " + sub.F + "/44   Emotional " + sub.E + "/36   Catastrophic " + sub.C + "/20";
+    var bRaw = document.getElementById("baseline").value.trim();
+    var changeTxt = "", changeEl = document.getElementById("change");
+    if (bRaw !== "" && !isNaN(+bRaw)) {
+      var d = total - (+bRaw);
+      var sig = Math.abs(d) >= 7 ? (d < 0 ? "meaningful improvement" : "meaningful worsening") : "within usual variation";
+      changeTxt = " Change from baseline (" + (+bRaw) + "): " + (d > 0 ? "+" : "") + d + " (" + sig + ").";
+      changeEl.textContent = (d > 0 ? "+" : "") + d + " · " + sig;
+    } else { changeEl.textContent = ""; }
+    var line = "Tinnitus Handicap Inventory (THI): " + total + "/100, grade " + g.n + " (" + g.label + "). Functional " + sub.F + "/44, emotional " + sub.E + "/36, catastrophic " + sub.C + "/20." + changeTxt;
+    if (answered < 25) line += " [Incomplete: " + (25 - answered) + " items unanswered]";
+    document.getElementById("out").textContent = line;
+  }
+  document.addEventListener("change", compute);
+  document.getElementById("baseline").addEventListener("input", compute);
+  document.getElementById("reset").addEventListener("click", function () {
+    document.querySelectorAll('input[type="radio"]').forEach(function (r) { r.checked = false; });
+    document.getElementById("baseline").value = "";
+    document.getElementById("copied").hidden = true;
+    compute();
+  });
+  document.getElementById("copy").addEventListener("click", function () {
+    var out = document.getElementById("out"), msg = document.getElementById("copied");
+    function select() { var r = document.createRange(); r.selectNodeContents(out); var s = getSelection(); s.removeAllRanges(); s.addRange(r); msg.textContent = "Selected — press Ctrl+C"; msg.hidden = false; }
+    try {
+      navigator.clipboard.writeText(out.textContent).then(function () { msg.textContent = "Copied"; msg.hidden = false; }, select);
+    } catch (e) { select(); }
+  });
+  compute();
+})();
+</script>
+
+</body>
+</html>

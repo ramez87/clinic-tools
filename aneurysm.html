@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Aneurysm Rupture Risk</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: inputs in one column, result panel below (sticky on wide screens), note-ready text at the bottom of the panel */
+:root {
+  --bg:#f4f6f8; --surface:#fff; --ink:#17212b; --muted:#5b6876; --line:#d9e0e7;
+  --accent:#0b6e74; --accent-ink:#fff; --accent-soft:#dcefef; --warn:#b7791f;
+  --font-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark) { :root { --bg:#11171d; --surface:#1a232c; --ink:#e6edf3; --muted:#9aa8b6; --line:#2c3946; --accent:#4fb9bd; --accent-ink:#0b1a1c; --accent-soft:#1d3a3c; --warn:#e0a94e; color-scheme:dark; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:15px; line-height:1.45; padding-inline:16px; padding-block:20px 32px; }
+.wrap { max-width:760px; margin:0 auto; display:flex; flex-direction:column; gap:16px; }
+a.back { color:var(--accent); font-size:.9rem; }
+h1 { font-size:1.35rem; margin:4px 0 0; }
+.sub { color:var(--muted); margin:0; max-width:64ch; }
+.card { background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 16px; display:flex; flex-direction:column; gap:14px; }
+.field { display:flex; flex-direction:column; gap:6px; }
+.field > span { font-weight:700; }
+.field small { color:var(--muted); font-weight:400; }
+.field small a { color:var(--accent); }
+.seg { display:flex; flex-wrap:wrap; gap:6px; }
+.seg label { position:relative; }
+.seg input { position:absolute; opacity:0; inset:0; }
+.seg span { display:block; padding:7px 12px; border:1px solid var(--line); border-radius:6px; font-size:.9rem; cursor:pointer; user-select:none; }
+.seg input:checked + span { background:var(--accent-soft); border-color:var(--accent); font-weight:700; }
+.seg input:focus-visible + span, .btn:focus-visible, input[type=number]:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+input[type=number] { width:7em; font:inherit; font-family:var(--font-mono); padding:6px 8px; border:1px solid var(--line); border-radius:6px; background:var(--bg); color:var(--ink); }
+.result { gap:10px; }
+@media (min-width:760px) and (min-height:820px) { .result { position:sticky; top:env(safe-area-inset-top,0px); z-index:2; } }
+.scores { display:grid; grid-template-columns:repeat(auto-fit,minmax(200px,1fr)); gap:10px; }
+.score { border:1px solid var(--line); border-radius:8px; padding:10px 12px; display:flex; flex-direction:column; gap:2px; min-width:0; }
+.score .lbl { font-size:.8rem; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; }
+.score .val { font-family:var(--font-mono); font-size:1.6rem; font-weight:600; font-variant-numeric:tabular-nums; }
+.score .det { font-size:.85rem; color:var(--muted); }
+.flag { color:var(--warn); font-size:.85rem; font-weight:700; }
+.out { font-family:var(--font-mono); font-size:.82rem; background:var(--bg); border:1px dashed var(--line); border-radius:6px; padding:8px 10px; white-space:pre-wrap; overflow-wrap:anywhere; user-select:all; }
+.outlbl { font-size:.8rem; color:var(--muted); margin-bottom:-6px; }
+.actions { display:flex; flex-wrap:wrap; gap:8px; align-items:center; }
+.btn { font:inherit; cursor:pointer; padding:8px 14px; border-radius:7px; border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink); font-weight:700; }
+.btn.ghost { background:transparent; color:var(--accent); }
+.notes { font-size:.85rem; color:var(--muted); display:flex; flex-direction:column; gap:6px; max-width:72ch; }
+.notes p { margin:0; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="./">&larr; Clinic tools</a>
+    <h1>Unruptured aneurysm rupture risk</h1>
+    <p class="sub">PHASES and ISUIA 5-year rupture risk for one aneurysm, with text ready for the aneurysm note. Nothing entered is saved or sent.</p>
+  </header>
+
+  <section class="card" aria-label="Inputs">
+    <div class="field"><span>Aneurysm size (largest diameter, mm)</span><input id="size" type="number" min="0" max="60" step="0.1" value="6.0" inputmode="decimal"></div>
+    <div class="field"><span>Location</span>
+      <div class="seg" id="site">
+        <label><input type="radio" name="site" value="cav" id="s_cav"><span>Cavernous ICA</span></label>
+        <label><input type="radio" name="site" value="ica" id="s_ica" checked><span>ICA (intradural)</span></label>
+        <label><input type="radio" name="site" value="mca" id="s_mca"><span>MCA</span></label>
+        <label><input type="radio" name="site" value="aca" id="s_aca"><span>ACA / ACom</span></label>
+        <label><input type="radio" name="site" value="pcom" id="s_pcom"><span>PCom</span></label>
+        <label><input type="radio" name="site" value="post" id="s_post"><span>Posterior circulation</span></label>
+      </div>
+    </div>
+    <div class="field"><span>Population <small>(PHASES)</small></span>
+      <div class="seg">
+        <label><input type="radio" name="pop" value="0" id="p0" checked><span>North American / European</span></label>
+        <label><input type="radio" name="pop" value="3" id="p3"><span>Japanese</span></label>
+        <label><input type="radio" name="pop" value="5" id="p5"><span>Finnish</span></label>
+      </div>
+    </div>
+    <div class="field"><span>Hypertension</span>
+      <div class="seg">
+        <label><input type="radio" name="htn" value="0" id="h0" checked><span>No</span></label>
+        <label><input type="radio" name="htn" value="1" id="h1"><span>Yes</span></label>
+      </div>
+    </div>
+    <div class="field"><span>Age (years)</span><input id="age" type="number" min="1" max="110" step="1" value="55" inputmode="numeric"></div>
+    <div class="field"><span>Expected remaining years of life <small>(for lifetime risk; e.g., from the <a href="https://www.ssa.gov/oact/STATS/table4c6.html" target="_blank" rel="noopener">SSA life table</a>, adjusted for health)</small></span><input id="ly" type="number" min="1" max="90" step="1" placeholder="e.g. 28" inputmode="numeric"></div>
+    <div class="field"><span>Prior SAH from another aneurysm</span>
+      <div class="seg">
+        <label><input type="radio" name="sah" value="0" id="e0" checked><span>No</span></label>
+        <label><input type="radio" name="sah" value="1" id="e1"><span>Yes</span></label>
+      </div>
+    </div>
+  </section>
+
+  <section class="card result" aria-live="polite">
+    <div class="scores">
+      <div class="score"><span class="lbl">PHASES</span><span class="val" id="phV">–</span><span class="det" id="phD"></span></div>
+      <div class="score"><span class="lbl">ISUIA 2003</span><span class="val" id="isV">–</span><span class="det" id="isD"></span></div>
+      <div class="score"><span class="lbl">Lifetime risk</span><span class="val" id="lfV">–</span><span class="det" id="lfD"></span></div>
+    </div>
+    <div class="flag" id="flag" hidden></div>
+    <div class="outlbl">For the A/P (replaces the PHASES/ISUIA sentence):</div>
+    <div class="out" id="outAP"></div>
+    <div class="outlbl">For the Imaging section:</div>
+    <div class="out" id="outImg"></div>
+    <div class="actions">
+      <button class="btn" type="button" id="cAP">Copy A/P sentence</button>
+      <button class="btn ghost" type="button" id="cImg">Copy imaging line</button>
+      <span id="msg" class="det" hidden></span>
+    </div>
+  </section>
+
+  <div class="notes">
+    <p>PHASES (Greving et al., Lancet Neurol 2014): population, hypertension, age, size, earlier SAH, site; 5-year absolute rupture risk by total score. Developed in intradural aneurysms.</p>
+    <p>ISUIA (Wiebers et al., Lancet 2003): 5-year cumulative rupture rates by size and location. Anterior circulation (ICA, ACA/ACom, MCA): 0%, 2.6%, 14.5%, 40% for &lt;7, 7–12, 13–24, ≥25 mm. Posterior circulation and PCom: 2.5%, 14.5%, 18.4%, 50%. Prior SAH from another aneurysm raises the &lt;7 mm rates to 1.5% (anterior) and 3.4% (posterior). Cavernous carotid: 0%, 0%, 3.0%, 6.4%.</p>
+    <p>Annual risk = 1 − (1 − 5-year risk)^(1/5). Lifetime risk = 1 − (1 − annual risk)^(remaining years), assuming a constant annual risk. These are population estimates; they do not include shape, growth or other risk factors, and extrapolating 5-year data over decades adds uncertainty.</p>
+  </div>
+</div>
+
+<script>
+(function () {
+  var PH_RISK = { 2:0.4, 3:0.7, 4:0.9, 5:1.3, 6:1.7, 7:2.4, 8:3.2, 9:4.3, 10:5.3, 11:7.2, 12:17.8 };
+  var SITE_NAME = { cav:"cavernous ICA", ica:"intradural ICA", mca:"MCA", aca:"ACA/ACom", pcom:"PCom", post:"posterior circulation" };
+  function val(n) { var c = document.querySelector('input[name="' + n + '"]:checked'); return c ? c.value : null; }
+  function fmt(x) { return (Math.round(x * 10) / 10).toString(); }
+  function compute() {
+    var size = parseFloat(document.getElementById("size").value);
+    var site = val("site"), pop = +val("pop"), htn = +val("htn"), sah = +val("sah");
+    var ageYrs = parseFloat(document.getElementById("age").value); var age = (!isNaN(ageYrs) && ageYrs >= 70) ? 1 : 0;
+    var ly = parseFloat(document.getElementById("ly").value);
+    var flag = document.getElementById("flag");
+    if (isNaN(size) || size <= 0) {
+      ["phV","isV","lfV"].forEach(function (id) { document.getElementById(id).textContent = "–"; });
+      document.getElementById("outAP").textContent = "Enter the aneurysm size.";
+      document.getElementById("outImg").textContent = "";
+      flag.hidden = true; return;
+    }
+    var sizePts = size < 7 ? 0 : size < 10 ? 3 : size < 20 ? 6 : 10;
+    var sitePts = (site === "ica" || site === "cav") ? 0 : site === "mca" ? 2 : 4;
+    var ph = pop + htn + age + sizePts + sah + sitePts;
+    var phRisk = PH_RISK[Math.min(Math.max(ph, 2), 12)];
+    var bin = size < 7 ? 0 : size < 13 ? 1 : size < 25 ? 2 : 3;
+    var binName = ["<7 mm","7-12 mm","13-24 mm","25 mm or larger"][bin];
+    var is;
+    if (site === "cav") is = [0, 0, 3.0, 6.4][bin];
+    else if (site === "pcom" || site === "post") is = (bin === 0 && sah) ? 3.4 : [2.5, 14.5, 18.4, 50][bin];
+    else is = (bin === 0 && sah) ? 1.5 : [0, 2.6, 14.5, 40][bin];
+    document.getElementById("phV").textContent = phRisk + "%";
+    document.getElementById("phD").textContent = "Score " + ph + " (pop " + pop + ", HTN " + htn + ", age " + age + ", size " + sizePts + ", SAH " + sah + ", site " + sitePts + ")";
+    document.getElementById("isV").textContent = fmt(is) + "%";
+    document.getElementById("isD").textContent = binName + ", " + SITE_NAME[site] + (sah && bin === 0 && site !== "cav" ? ", prior SAH" : "");
+    if (site === "cav") { flag.textContent = "PHASES was developed in intradural aneurysms; for cavernous aneurysms, rely on ISUIA."; flag.hidden = false; }
+    else flag.hidden = true;
+    function annual(p5) { return (1 - Math.pow(1 - p5 / 100, 1 / 5)) * 100; }
+    function lifetime(a, yrs) { return (1 - Math.pow(1 - a / 100, yrs)) * 100; }
+    function range(a, b) { var x = fmt(Math.min(a, b)), y = fmt(Math.max(a, b)); return x === y ? x : x + "-" + y; }
+    var aPh = annual(phRisk), aIs = annual(is);
+    var ap = "the estimated 5-year rupture risk is " + phRisk + "% by PHASES (score " + ph + ") and " + fmt(is) + "% by ISUIA, or roughly " + range(aPh, aIs) + "% per year";
+    var lifeTxt = "";
+    if (!isNaN(ly) && ly > 0) {
+      var lPh = lifetime(aPh, ly), lIs = lifetime(aIs, ly);
+      ap += ", which over an expected " + Math.round(ly) + " years of life corresponds to a cumulative lifetime rupture risk of about " + range(lPh, lIs) + "%";
+      lifeTxt = " Estimated lifetime risk over " + Math.round(ly) + " years: " + fmt(lPh) + "% (PHASES), " + fmt(lIs) + "% (ISUIA).";
+      document.getElementById("lfV").textContent = range(lPh, lIs) + "%";
+      document.getElementById("lfD").textContent = "Over " + Math.round(ly) + " years (PHASES " + fmt(lPh) + "%, ISUIA " + fmt(lIs) + "%)";
+    } else {
+      document.getElementById("lfV").textContent = "–";
+      document.getElementById("lfD").textContent = "Enter expected remaining years";
+    }
+    document.getElementById("outAP").textContent = ap + ".";
+    document.getElementById("outImg").textContent = "PHASES: " + ph + " (5-year rupture risk " + phRisk + "%). ISUIA 5-year rupture risk: " + fmt(is) + "% (" + binName + ", " + SITE_NAME[site] + ")." + lifeTxt;
+  }
+  function copy(id) {
+    var el = document.getElementById(id), msg = document.getElementById("msg");
+    function sel() { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); msg.textContent = "Selected - press Ctrl+C"; msg.hidden = false; }
+    try { navigator.clipboard.writeText(el.textContent).then(function () { msg.textContent = "Copied"; msg.hidden = false; }, sel); } catch (e) { sel(); }
+  }
+  document.addEventListener("change", compute);
+  ["size","age","ly"].forEach(function (id) { document.getElementById(id).addEventListener("input", compute); });
+  document.getElementById("cAP").addEventListener("click", function () { copy("outAP"); });
+  document.getElementById("cImg").addEventListener("click", function () { copy("outImg"); });
+  compute();
+})();
+</script>
+</body>
+</html>
