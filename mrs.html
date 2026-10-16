@@ -6,7 +6,7 @@
 <meta name="robots" content="noindex">
 <title>mRS</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
-<link rel="stylesheet" href="tools.css">
+<link rel="stylesheet" href="tools.css?v=5">
 </head>
 <body>
 <div class="wrap">
@@ -28,13 +28,14 @@
       <span id="msg" class="det" hidden></span>
     </div>
   </section>
+  <p class="sub warn" id="dimtip" hidden>A grade was chosen directly, so the interview is ignored. Click any interview answer to use the interview instead.</p>
   <section class="card" id="items" aria-label="Answers"></section>
   <div class="notes">
     <p>van Swieten JC, et al. Stroke 1988;19:604-7. Good outcome is usually defined as mRS 0-2.</p>
     <p>Interview: branching structured mRS questions (3 questions per patient). Question 1 splits independent (mRS 0-2) from dependent (mRS 3-5). Grade 6 is chosen directly. "Sit up in bed without help" stands in for mRS 5 (bedridden, incontinent, constant care); use the direct pick if it does not fit.</p>
   </div>
 </div>
-<script src="scorer.js"></script>
+<script src="scorer.js?v=5"></script>
 <script>
 
 var O = [["0 - No symptoms",0],["1 - No significant disability: symptoms, but able to carry out all usual duties and activities",1],
@@ -66,6 +67,17 @@ function tree(v) {
   if (v.t5 === undefined) return { g:null, show:["t4","t5"] };
   return { g: v.t5 === 1 ? 4 : 5, show:["t4","t5"] };
 }
+
+// Last action wins: an interview answer clears the direct pick; a direct pick greys out the interview.
+document.addEventListener("change", function (e) {
+  var n = e.target.name;
+  if (/^t[1-5]$/.test(n)) { var d = document.querySelector('input[name="now"]:checked'); if (d) d.checked = false; }
+}, true);
+function dimInterview(on) {
+  ["t1","t2","t3","t4","t5"].forEach(function (id) { var b = block(id); if (b) b.classList.toggle("dim", on); });
+  var tip = document.getElementById("dimtip");
+  if (tip) tip.hidden = !on;
+}
 function block(id) { var el = document.querySelector('input[name="' + id + '"]'); return el ? el.closest(".q") : null; }
 Scorer.build({ items: items, compute:function (v) {
   var t = tree(v);
@@ -74,6 +86,7 @@ Scorer.build({ items: items, compute:function (v) {
     var on = t.show.indexOf(id) >= 0; b.hidden = !on;
     if (!on) { var c = b.querySelector("input:checked"); if (c) c.checked = false; }
   });
+  dimInterview(v.now !== undefined);
   var g, how;
   if (v.now !== undefined) { g = v.now; how = "clinician-assigned"; }
   else { g = t.g; how = "structured interview"; }
