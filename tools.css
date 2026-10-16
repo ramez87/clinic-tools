@@ -58,3 +58,4 @@ table.risk th { font-size:.78rem; color:var(--muted); letter-spacing:.04em; text
 table.risk td.num { font-family:var(--font-mono); white-space:nowrap; }
 .src { font-size:.8rem; color:var(--muted); }
 @media (max-width:520px) { table.risk, table.risk tbody, table.risk tr, table.risk td { display:block; } table.risk thead { display:none; } table.risk tr { border-bottom:1px solid var(--line); padding-block:6px; } table.risk td { border:0; padding:2px 0; } }
+.q[hidden], .grp[hidden] { display:none; }

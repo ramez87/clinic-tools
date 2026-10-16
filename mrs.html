@@ -31,7 +31,7 @@
   <section class="card" id="items" aria-label="Answers"></section>
   <div class="notes">
     <p>van Swieten JC, et al. Stroke 1988;19:604-7. Good outcome is usually defined as mRS 0-2.</p>
-    <p>Interview adapted from the simplified mRS questionnaire (Bruno A, et al. Stroke 2010;41:1048-50): ask from most to least severe and stop at the first Yes. Grade 6 (dead) is chosen directly.</p>
+    <p>Interview: branching structured mRS questions (3 questions per patient). Question 1 splits independent (mRS 0-2) from dependent (mRS 3-5). Grade 6 is chosen directly. "Sit up in bed without help" stands in for mRS 5 (bedridden, incontinent, constant care); use the direct pick if it does not fit.</p>
   </div>
 </div>
 <script src="scorer.js"></script>
@@ -44,33 +44,43 @@ var O = [["0 - No symptoms",0],["1 - No significant disability: symptoms, but ab
  ["5 - Severe disability: bedridden, incontinent, needs constant nursing care",5],["6 - Dead",6]];
 var L = ["no symptoms","no significant disability","slight disability","moderate disability","moderately severe disability","severe disability","dead"];
 var YN = [["Yes",1],["No",0]];
-// Asked from most to least severe; the first "Yes" sets the grade.
-var Q = [
-  { id:"q5", grade:5, name:"Is the patient bedridden, incontinent, and in need of constant nursing care and attention?" },
-  { id:"q4", grade:4, name:"Does the patient need help from another person to walk, and help with bodily needs such as toileting, bathing or dressing?", hint:"A cane or walker alone is not help from another person." },
-  { id:"q3", grade:3, name:"Does the patient need some help from another person to look after their own affairs?", hint:"For example: preparing a simple meal, household chores, managing money, shopping or traveling locally. They can still walk without help." },
-  { id:"q2", grade:2, name:"Is the patient unable to do all of their usual activities from before?", hint:"For example: work, driving, hobbies, family or social roles. They manage their own affairs without help." },
-  { id:"q1", grade:1, name:"Does the patient have any symptoms from the stroke or bleed?", hint:"For example: weakness, numbness, clumsiness, speech, vision, memory, mood or fatigue. They can do all usual activities." }
+var items = [
+  { id:"t1", grp:"Structured interview (ask the patient or family; the next question appears after each answer)", name:"1. Could you live alone without any help from another person?", hint:"This means being able to bathe, use the toilet, shop, prepare or get meals, and manage finances.", noPts:true, opts:YN },
+  { id:"t2", name:"2. Can you do everything you were doing right before your stroke, bleed or procedure, even if slower and not as much?", noPts:true, opts:YN },
+  { id:"t3", name:"3. Are you completely back to the way you were right before your stroke, bleed or procedure?", noPts:true, opts:YN },
+  { id:"t4", name:"2. Can you walk from one room to another without help from another person?", hint:"A cane or walker is fine; no other person helping.", noPts:true, opts:YN },
+  { id:"t5", name:"3. Can you sit up in bed without any help?", noPts:true, opts:YN },
+  { id:"now", grp:"Or choose the grade directly", name:"Current mRS (overrides the interview)", stack:true, noPts:true, opts:O },
+  { id:"pre", grp:"Optional", name:"Pre-event mRS (before the stroke, bleed or procedure)", stack:true, noPts:true, opts:O.slice(0,6) }
 ];
-var items = Q.map(function (q, i) { return { id:q.id, grp: i === 0 ? "Structured interview (ask the patient or family; stop at the first Yes)" : null, name:q.name, hint:q.hint, noPts:true, opts:YN }; });
-items.push({ id:"now", grp:"Or choose the grade directly", name:"Current mRS (overrides the interview)", stack:true, noPts:true, opts:O });
-items.push({ id:"pre", grp:"Optional", name:"Pre-event mRS (before the stroke, bleed or procedure)", stack:true, noPts:true, opts:O.slice(0,6) });
-Scorer.build({ items: items, compute:function (v) {
-  var g = null, how = "", pending = null;
-  if (v.now !== undefined) { g = v.now; how = "clinician-assigned"; }
-  else {
-    for (var i = 0; i < Q.length; i++) {
-      var a = v[Q[i].id];
-      if (a === undefined) { pending = i; break; }
-      if (a === 1) { g = Q[i].grade; break; }
-    }
-    if (g === null && pending === null) g = 0;
-    how = "structured interview";
+function tree(v) {
+  if (v.t1 === undefined) return { g:null, show:[] };
+  if (v.t1 === 1) {
+    if (v.t2 === undefined) return { g:null, show:["t2"] };
+    if (v.t2 === 0) return { g:2, show:["t2"] };
+    if (v.t3 === undefined) return { g:null, show:["t2","t3"] };
+    return { g: v.t3 === 1 ? 0 : 1, show:["t2","t3"] };
   }
-  if (g === null) return { val:"--", det: pending === 0 ? "Start with the first question, or choose the grade directly" : "Answer question " + (pending + 1) + " to finish", note:"Modified Rankin Scale (mRS): ***" };
-  var t = "Modified Rankin Scale (mRS): " + g + " (" + L[g] + "; " + how + ").";
-  if (v.pre !== undefined) t += " Pre-event mRS: " + v.pre + " (" + L[v.pre] + ").";
-  return { val: String(g), det: L[g].charAt(0).toUpperCase() + L[g].slice(1) + " (" + how + ")", note:t };
+  if (v.t4 === undefined) return { g:null, show:["t4"] };
+  if (v.t4 === 1) return { g:3, show:["t4"] };
+  if (v.t5 === undefined) return { g:null, show:["t4","t5"] };
+  return { g: v.t5 === 1 ? 4 : 5, show:["t4","t5"] };
+}
+function block(id) { var el = document.querySelector('input[name="' + id + '"]'); return el ? el.closest(".q") : null; }
+Scorer.build({ items: items, compute:function (v) {
+  var t = tree(v);
+  ["t2","t3","t4","t5"].forEach(function (id) {
+    var b = block(id); if (!b) return;
+    var on = t.show.indexOf(id) >= 0; b.hidden = !on;
+    if (!on) { var c = b.querySelector("input:checked"); if (c) c.checked = false; }
+  });
+  var g, how;
+  if (v.now !== undefined) { g = v.now; how = "clinician-assigned"; }
+  else { g = t.g; how = "structured interview"; }
+  if (g === null) return { val:"--", det: v.t1 === undefined ? "Start with question 1, or choose the grade directly" : "Answer the next question", note:"Modified Rankin Scale (mRS): ***" };
+  var s = "Modified Rankin Scale (mRS): " + g + " (" + L[g] + "; " + how + ").";
+  if (v.pre !== undefined) s += " Pre-event mRS: " + v.pre + " (" + L[v.pre] + ").";
+  return { val: String(g), det: L[g].charAt(0).toUpperCase() + L[g].slice(1) + " (" + how + ")", note:s };
 }});
 
 </script>
