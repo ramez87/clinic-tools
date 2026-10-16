@@ -167,12 +167,27 @@ input[type=number] { width:7em; font:inherit; font-family:var(--font-mono); padd
     function annual(p5) { return (1 - Math.pow(1 - p5 / 100, 1 / 5)) * 100; }
     function lifetime(a, yrs) { return (1 - Math.pow(1 - a / 100, yrs)) * 100; }
     function range(a, b) { var x = fmt(Math.min(a, b)), y = fmt(Math.max(a, b)); return x === y ? x : x + "-" + y; }
+    function nat(p) {
+      if (p === 0) return "0 in 100 (0%)";
+      if (p < 0.1) return "fewer than 1 in 1,000 (under 0.1%)";
+      if (p < 1) return "about " + Math.round(p * 10) + " in 1,000 (" + fmt(p) + "%)";
+      return "about " + Math.round(p) + " in 100 (" + fmt(p) + "%)";
+    }
+    function natRange(a, b) {
+      var lo = Math.min(a, b), hi = Math.max(a, b);
+      if (fmt(lo) === fmt(hi)) return nat(lo);
+      var per1000 = hi < 1 || (lo > 0 && lo < 1), k = per1000 ? 10 : 1, den = per1000 ? "1,000" : "100";
+      var nlo = Math.round(lo * k), nhi = Math.round(hi * k);
+      var loTxt = lo === 0 ? "0" : (nlo === 0 ? "under 1" : (nlo === nhi ? "about " + nlo : "about " + nlo));
+      var hiTxt = lo === 0 || nlo === 0 ? "about " + nhi : String(nhi);
+      return loTxt + " to " + hiTxt + " in " + den + " (" + fmt(lo) + "-" + fmt(hi) + "%)";
+    }
     var aPh = annual(phRisk), aIs = annual(is);
-    var ap = "the estimated 5-year rupture risk is " + phRisk + "% by PHASES (score " + ph + ") and " + fmt(is) + "% by ISUIA, or roughly " + range(aPh, aIs) + "% per year";
+    var ap = "the estimated 5-year rupture risk is " + nat(phRisk) + " by PHASES (score " + ph + ") and " + nat(is) + " by ISUIA, or " + natRange(aPh, aIs) + " per year";
     var lifeTxt = "";
     if (!isNaN(ly) && ly > 0) {
       var lPh = lifetime(aPh, ly), lIs = lifetime(aIs, ly);
-      ap += ", which over an expected " + Math.round(ly) + " years of life corresponds to a cumulative lifetime rupture risk of about " + range(lPh, lIs) + "%";
+      ap += ", which over an expected " + Math.round(ly) + " years of life corresponds to a cumulative lifetime rupture risk of " + natRange(lPh, lIs);
       lifeTxt = " Estimated lifetime risk over " + Math.round(ly) + " years: " + fmt(lPh) + "% (PHASES), " + fmt(lIs) + "% (ISUIA).";
       document.getElementById("lfV").textContent = range(lPh, lIs) + "%";
       document.getElementById("lfD").textContent = "Over " + Math.round(ly) + " years (PHASES " + fmt(lPh) + "%, ISUIA " + fmt(lIs) + "%)";
