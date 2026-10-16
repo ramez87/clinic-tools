@@ -13,7 +13,7 @@
   <header>
     <a class="back" href="./">&larr; Clinic tools</a>
     <h1>NIH Stroke Scale (NIHSS)</h1>
-    <p class="sub">For stroke, carotid and intracranial stenosis visits. Score what the patient does on the first attempt. Nothing entered is saved or sent.</p>
+    <p class="sub">For stroke, carotid and intracranial stenosis visits. Go in order and do not go back to change a score. Score what the patient does on the first attempt, not what you think they can do, and do not coach. Nothing entered is saved or sent.</p>
   </header>
 
   <section class="card result" aria-live="polite">
@@ -30,6 +30,7 @@
   </section>
   <section class="card" id="items" aria-label="Answers"></section>
   <div class="notes">
+    <p>Cards: the picture, naming objects, sentences and word list are on the official NIHSS cards; have them ready (or screen-share them for telehealth). Telehealth: items needing touch (sensory) or close assessment may be limited; note this.</p>
     <p>Total 0-42. Severity: 0 none, 1-4 minor, 5-15 moderate, 16-20 moderate to severe, 21-42 severe. Untestable (UN) items are not added to the total.</p>
     <p>Brott T, et al. Stroke 1989;20:864-70. Follow the official NIH Stroke Scale instructions for each item.</p>
   </div>
@@ -39,26 +40,26 @@
 
 var UN = ["UN - amputation or joint fusion", null];
 var I = [
- ["i1a","1a. Level of consciousness",[["Alert",0],["Not alert, arousable by minor stimulation",1],["Not alert, needs repeated or painful stimulation",2],["Unresponsive or reflex responses only",3]]],
- ["i1b","1b. LOC questions (month, age)",[["Both correct",0],["One correct",1],["Neither correct",2]]],
- ["i1c","1c. LOC commands (open/close eyes, grip/release)",[["Both correct",0],["One correct",1],["Neither correct",2]]],
- ["i2","2. Best gaze",[["Normal",0],["Partial gaze palsy",1],["Forced deviation or total gaze paresis",2]]],
- ["i3","3. Visual fields",[["No visual loss",0],["Partial hemianopia",1],["Complete hemianopia",2],["Bilateral hemianopia (including cortical blindness)",3]]],
- ["i4","4. Facial palsy",[["Normal",0],["Minor paralysis",1],["Partial paralysis",2],["Complete paralysis (one or both sides)",3]]],
- ["i5a","5a. Motor arm, left",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
- ["i5b","5b. Motor arm, right",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
- ["i6a","6a. Motor leg, left",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
- ["i6b","6b. Motor leg, right",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
- ["i7","7. Limb ataxia",[["Absent",0],["Present in one limb",1],["Present in two limbs",2],["UN - amputation or joint fusion",null]]],
- ["i8","8. Sensory",[["Normal",0],["Mild to moderate loss",1],["Severe to total loss",2]]],
- ["i9","9. Best language",[["No aphasia",0],["Mild to moderate aphasia",1],["Severe aphasia",2],["Mute, global aphasia",3]]],
- ["i10","10. Dysarthria",[["Normal",0],["Mild to moderate",1],["Severe",2],["UN - intubated or other barrier",null]]],
- ["i11","11. Extinction and inattention",[["None",0],["Inattention in one modality",1],["Profound inattention in more than one modality",2]]]
+ ["i1a","1a. Level of consciousness","Choose a response even if testing is limited (intubation, language barrier, trauma). Score 3 only if the patient makes no movement other than reflexes to pain.",[["Alert",0],["Not alert, arousable by minor stimulation",1],["Not alert, needs repeated or painful stimulation",2],["Unresponsive or reflex responses only",3]]],
+ ["i1b","1b. LOC questions (month, age)","Ask the month and the patient's age. Only exact answers count; no partial credit. Aphasic or stuporous: 2. Intubated, severe dysarthria, language barrier or trauma: 1.",[["Both correct",0],["One correct",1],["Neither correct",2]]],
+ ["i1c","1c. LOC commands (open/close eyes, grip/release)","Ask to open and close the eyes, then grip and release the non-weak hand. Demonstrate if needed. Credit an unequivocal attempt even if weakness prevents completion.",[["Both correct",0],["One correct",1],["Neither correct",2]]],
+ ["i2","2. Best gaze","Horizontal eye movements only, voluntary or oculocephalic. Isolated CN III, IV or VI palsy: 1. Gaze palsy that can be overcome: 1.",[["Normal",0],["Partial gaze palsy",1],["Forced deviation or total gaze paresis",2]]],
+ ["i3","3. Visual fields","Confrontation in upper and lower quadrants (finger counting or visual threat). Clear asymmetry or quadrantanopia: 1. Blind from any cause: 3. Extinction is scored in item 11.",[["No visual loss",0],["Partial hemianopia",1],["Complete hemianopia",2],["Bilateral hemianopia (including cortical blindness)",3]]],
+ ["i4","4. Facial palsy","Ask or pantomime: show teeth, raise eyebrows, close eyes tightly. Use painful stimulus if poorly responsive.",[["Normal",0],["Minor paralysis",1],["Partial paralysis",2],["Complete paralysis (one or both sides)",3]]],
+ ["i5a","5a. Motor arm, left","Arm out at 90 degrees sitting (45 lying), palms down, for 10 seconds; count out loud. Drift before 10 seconds without hitting the bed: 1. Test the non-weak arm first.",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
+ ["i5b","5b. Motor arm, right","Same as 5a, other arm.",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
+ ["i6a","6a. Motor leg, left","Leg raised at 30 degrees lying down for 5 seconds. Drift by 5 seconds without hitting the bed: 1.",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
+ ["i6b","6b. Motor leg, right","Same as 6a, other leg.",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
+ ["i7","7. Limb ataxia","Finger-nose-finger and heel-shin on both sides, eyes open. Score only if out of proportion to weakness. Paralyzed or cannot understand: 0.",[["Absent",0],["Present in one limb",1],["Present in two limbs",2],["UN - amputation or joint fusion",null]]],
+ ["i8","8. Sensory","Pinprick on the face, arms (not hands), trunk and legs; grimace or withdrawal if obtunded. Only stroke-related loss counts. Coma (1a = 3), quadriplegia or bilateral loss: 2.",[["Normal",0],["Mild to moderate loss",1],["Severe to total loss",2]]],
+ ["i9","9. Best language","Describe the picture, name the objects and read the sentences from the NIHSS cards. Coma (1a = 3): 3. Intubated: ask to write.",[["No aphasia",0],["Mild to moderate aphasia",1],["Severe aphasia",2],["Mute, global aphasia",3]]],
+ ["i10","10. Dysarthria","Read or repeat the word list from the NIHSS cards. Score the clarity, not the language content.",[["Normal",0],["Mild to moderate",1],["Severe",2],["UN - intubated or other barrier",null]]],
+ ["i11","11. Extinction and inattention","Use information from earlier items. Test double simultaneous touch and visual stimuli. Visual neglect or one-modality extinction: 1. Profound neglect of more than one modality: 2.",[["None",0],["Inattention in one modality",1],["Profound inattention in more than one modality",2]]]
 ];
 function band(t) { return t === 0 ? "no stroke symptoms" : t <= 4 ? "minor" : t <= 15 ? "moderate" : t <= 20 ? "moderate to severe" : "severe"; }
-Scorer.build({ items: I.map(function (x) { return { id:x[0], name:x[1], stack:true, opts:x[2] }; }), compute:function (v) {
+Scorer.build({ items: I.map(function (x) { return { id:x[0], name:x[1], hint:x[2], stack:true, opts:x[3] }; }), compute:function (v) {
   var t = 0, n = 0, parts = [], un = [];
-  I.forEach(function (x) { var s = v[x[0]]; if (s === undefined) return; n++; var code = x[1].split(".")[0]; if (s === null) un.push(code); else { t += s; if (s > 0) parts.push(code + " " + s); } });
+  I.forEach(function (x) { var s = v[x[0]]; if (s === undefined) return; n++; var code = x[1].split(".")[0]; if (s === null) un.push(code); else { t += s; if (s > 0) parts.push(code + " = " + s); } });
   if (n < I.length) return { val: String(t), det: n + " of 15 items answered", warn:true, note:"NIH Stroke Scale (NIHSS): *** (incomplete: " + n + " of 15 items)." };
   var note = "NIH Stroke Scale (NIHSS): " + t + " (" + band(t) + ")" + (parts.length ? "; items: " + parts.join(", ") : "") + (un.length ? "; untestable: " + un.join(", ") : "") + ".";
   return { val:String(t), det: band(t).charAt(0).toUpperCase() + band(t).slice(1), note: note };
