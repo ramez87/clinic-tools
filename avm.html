@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>AVM grading</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tools.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="./">&larr; Clinic tools</a>
+    <h1>Brain AVM grading</h1>
+    <p class="sub">Spetzler-Martin grade, Spetzler-Ponce class and Lawton-Young supplementary grade. Nothing entered is saved or sent.</p>
+  </header>
+  <section class="card" id="items" aria-label="Answers"></section>
+
+  <section class="card result" aria-live="polite">
+    <div class="scores">
+      <div class="score"><span class="lbl">Spetzler-Martin</span><span class="val" id="val">--</span><span class="det" id="det"></span></div>
+    </div>
+    <div class="outlbl">For the note:</div>
+    <div class="out" id="out"></div>
+    <div class="actions">
+      <button class="btn" type="button" id="copy">Copy for note</button>
+      <button class="btn ghost" type="button" id="reset">Reset</button>
+      <span id="msg" class="det" hidden></span>
+    </div>
+  </section>
+  <div class="notes">
+    <p>Spetzler RF, Martin NA. J Neurosurg 1986;65:476-83. Spetzler-Ponce class: A = grade I-II, B = III, C = IV-V (Spetzler RF, Ponce FA. J Neurosurg 2011;114:842-9).</p>
+    <p>Lawton MT, et al. Neurosurgery 2010;66:702-13: supplementary grade 1-6; a combined Spetzler-Martin + supplementary grade of 6 or less was associated with acceptably low surgical risk in that series.</p>
+  </div>
+</div>
+<script src="scorer.js"></script>
+<script>
+
+var SP = ["", "A", "A", "B", "C", "C"];
+Scorer.build({ items:[
+  { id:"size", grp:"Spetzler-Martin", name:"Nidus size (largest diameter)", opts:[["Less than 3 cm",1],["3 to 6 cm",2],["More than 6 cm",3]] },
+  { id:"elo", name:"Eloquent location", hint:"Sensorimotor, language or visual cortex; hypothalamus, thalamus, internal capsule, brainstem, cerebellar peduncles or deep cerebellar nuclei", opts:[["No",0],["Yes",1]] },
+  { id:"dv", name:"Deep venous drainage", hint:"Any drainage into deep veins (e.g., internal cerebral veins, basal veins, precentral cerebellar vein)", opts:[["No (superficial only)",0],["Yes",1]] },
+  { id:"age", grp:"Lawton-Young supplementary", name:"Age", opts:[["Under 20",1],["20 to 40",2],["Over 40",3]] },
+  { id:"rup", name:"Hemorrhage", opts:[["Ruptured",0],["Unruptured",1]] },
+  { id:"dif", name:"Nidus", opts:[["Compact",0],["Diffuse",1]] }
+], compute:function (v) {
+  var smOK = v.size !== undefined && v.elo !== undefined && v.dv !== undefined;
+  var suOK = v.age !== undefined && v.rup !== undefined && v.dif !== undefined;
+  if (!smOK) return { val:"--", det:"Answer the three Spetzler-Martin items", note:"Spetzler-Martin grade: ***" };
+  var sm = v.size + v.elo + v.dv, rom = ["","I","II","III","IV","V"][sm];
+  var t = "Spetzler-Martin grade " + rom + " (size " + v.size_label.toLowerCase() + ", " + (v.elo ? "eloquent" : "non-eloquent") + ", " + (v.dv ? "deep venous drainage" : "superficial venous drainage only") + "); Spetzler-Ponce class " + SP[sm] + ".";
+  var det = "Spetzler-Ponce class " + SP[sm];
+  if (suOK) {
+    var su = v.age + v.rup + v.dif, comb = sm + su;
+    t += " Lawton-Young supplementary grade " + su + " (age " + v.age_label.toLowerCase() + ", " + v.rup_label.toLowerCase() + ", " + v.dif_label.toLowerCase() + " nidus); combined Spetzler-Martin + supplementary grade " + comb + ".";
+    det += " | Supplementary " + su + " | Combined " + comb + (comb <= 6 ? " (6 or less)" : " (above 6)");
+  }
+  return { val: rom, det: det, note: t };
+}});
+
+</script>
+</body>
+</html>

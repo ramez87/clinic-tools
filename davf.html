@@ -1,0 +1,64 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>dAVF classification</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tools.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="./">&larr; Clinic tools</a>
+    <h1>Dural AV fistula: Borden and Cognard</h1>
+    <p class="sub">Classify from the angiogram. Any cortical venous drainage (Borden II-III, Cognard IIb and above) is high grade. Nothing entered is saved or sent.</p>
+  </header>
+  <section class="card" id="items" aria-label="Answers"></section>
+
+  <section class="card result" aria-live="polite">
+    <div class="scores">
+      <div class="score"><span class="lbl">Classification</span><span class="val" id="val">--</span><span class="det" id="det"></span></div>
+    </div>
+    <div class="outlbl">For the note:</div>
+    <div class="out" id="out"></div>
+    <div class="actions">
+      <button class="btn" type="button" id="copy">Copy for note</button>
+      <button class="btn ghost" type="button" id="reset">Reset</button>
+      <span id="msg" class="det" hidden></span>
+    </div>
+  </section>
+  <div class="notes">
+    <p>Borden JA, et al. J Neurosurg 1995;82:166-79. Cognard C, et al. Radiology 1995;194:671-80.</p>
+    <p>Natural history (internal reference): low grade progressed to cortical venous drainage in about 2% over about 3 years (CONDOR 2022); high grade events about 1.4%/yr if found without symptoms vs about 19%/yr if symptomatic (Strom 2009).</p>
+  </div>
+</div>
+<script src="scorer.js"></script>
+<script>
+
+Scorer.build({ items:[
+  { id:"drain", name:"Venous drainage", noPts:true, stack:true, opts:[["Into a dural sinus or meningeal vein",1],["Directly into cortical (leptomeningeal) veins, no sinus",2],["Into spinal perimedullary veins",3]] },
+  { id:"flow", name:"Flow in the draining sinus (if drains into a sinus)", noPts:true, opts:[["Antegrade (normal direction)",0],["Retrograde",1]] },
+  { id:"cvr", name:"Cortical venous reflux", noPts:true, opts:[["No",0],["Yes",1]] },
+  { id:"ect", name:"Venous ectasia (if direct cortical drainage)", hint:"Cortical vein over 5 mm and more than 3 times the diameter of the draining vein", noPts:true, opts:[["No",0],["Yes",1]] }
+], compute:function (v) {
+  if (v.drain === undefined) return { val:"--", det:"Choose the venous drainage", note:"Dural arteriovenous fistula, Borden *** / Cognard ***." };
+  var b, c, desc;
+  if (v.drain === 1) {
+    if (v.flow === undefined || v.cvr === undefined) return { val:"--", det:"Answer sinus flow and cortical venous reflux", note:"Dural arteriovenous fistula, Borden *** / Cognard ***." };
+    b = v.cvr ? "II" : "I";
+    c = v.cvr ? (v.flow ? "IIa+b" : "IIb") : (v.flow ? "IIa" : "I");
+    desc = "drains into a dural sinus with " + (v.flow ? "retrograde" : "antegrade") + " sinus flow " + (v.cvr ? "and" : "without") + " cortical venous reflux";
+  } else if (v.drain === 2) {
+    if (v.ect === undefined) return { val:"--", det:"Answer venous ectasia", note:"Dural arteriovenous fistula, Borden III / Cognard ***." };
+    b = "III"; c = v.ect ? "IV" : "III"; desc = "drains directly into cortical veins " + (v.ect ? "with" : "without") + " venous ectasia";
+  } else { b = "III"; c = "V"; desc = "drains into spinal perimedullary veins"; }
+  var high = b !== "I";
+  return { val: "Borden " + b, det: "Cognard " + c + " | " + (high ? "Cortical venous drainage: HIGH GRADE" : "No cortical venous drainage: low grade"), warn: high,
+    note: "Dural arteriovenous fistula, Borden " + b + " / Cognard " + c + " (" + desc + "). Cortical venous drainage: " + (high ? "present (high grade)." : "absent (low grade).") };
+}});
+
+</script>
+</body>
+</html>

@@ -11,10 +11,11 @@
 @media (prefers-color-scheme: dark) { :root { --bg:#11171d; --surface:#1a232c; --ink:#e6edf3; --muted:#9aa8b6; --line:#2c3946; --accent:#4fb9bd; color-scheme: dark; } }
 * { box-sizing: border-box; }
 body { margin:0; background:var(--bg); color:var(--ink); font-family:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif; padding-inline:16px; padding-block:28px; }
-main { max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+main { max-width:640px; margin:0 auto; display:flex; flex-direction:column; gap:10px; }
 h1 { margin:0; font-size:1.4rem; }
+h2 { margin:18px 0 0; font-size:.85rem; color:var(--muted); letter-spacing:.05em; text-transform:uppercase; }
 p { margin:0; color:var(--muted); }
-.tool { display:block; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:14px 16px; text-decoration:none; color:var(--ink); }
+.tool { display:block; background:var(--surface); border:1px solid var(--line); border-radius:10px; padding:12px 16px; text-decoration:none; color:var(--ink); }
 .tool:hover, .tool:focus-visible { border-color:var(--accent); outline:none; }
 .tool b { color:var(--accent); }
 .soon { opacity:.6; }
@@ -24,11 +25,31 @@ p { margin:0; color:var(--muted); }
 <main>
   <h1>Neurointerventional clinic tools</h1>
   <p>Scoring tools for clinic visits. Nothing entered here is saved or sent anywhere.</p>
-  <a class="tool" href="thi.html"><b>Tinnitus Handicap Inventory (THI)</b><br>25 questions, total 0–100 with grade and a line to paste into the note.</a>
-  <a class="tool" href="aneurysm.html"><b>Unruptured aneurysm rupture risk</b><br>PHASES, ISUIA and estimated lifetime risk, with text for the aneurysm note.</a>
-  <a class="tool" href="bern.html"><b>Bern score (CSF leak)</b><br>Brain MRI score for spontaneous intracranial hypotension, with text for the note.</a>
-  <a class="tool" href="hit6.html"><b>HIT-6 (CSF leak, headache)</b><br>Headache Impact Test total and impact category, with text for the note.</a>
-  <div class="tool soon"><b>Pain scores for vertebral augmentation</b><br>Coming soon.</div>
+
+  <h2>Aneurysm</h2>
+  <a class="tool" href="aneurysm.html"><b>Unruptured aneurysm rupture risk</b><br>PHASES, ISUIA and estimated lifetime risk, with text for the note.</a>
+  <div class="tool soon"><b>Procedure risks</b><br>Risks by disease, status and treatment. Coming soon.</div>
+
+  <h2>Brain AVM</h2>
+  <a class="tool" href="avm.html"><b>AVM grading</b><br>Spetzler-Martin, Spetzler-Ponce and Lawton-Young supplementary grade.</a>
+
+  <h2>Dural AV fistula</h2>
+  <a class="tool" href="davf.html"><b>Borden and Cognard</b><br>Classify from the angiogram; flags cortical venous drainage.</a>
+
+  <h2>Pulsatile tinnitus and IIH</h2>
+  <a class="tool" href="thi.html"><b>Tinnitus Handicap Inventory (THI)</b><br>25 questions, total 0–100 with grade.</a>
+
+  <h2>Spinal CSF leak</h2>
+  <a class="tool" href="bern.html"><b>Bern score</b><br>Brain MRI score for spontaneous intracranial hypotension.</a>
+  <a class="tool" href="hit6.html"><b>HIT-6</b><br>Headache Impact Test total and impact category.</a>
+
+  <h2>Vertebral augmentation and basivertebral nerve ablation</h2>
+  <a class="tool" href="odi.html"><b>Back pain score and ODI</b><br>Pain 0–10 and Oswestry Disability Index, with change from the last visit.</a>
+
+  <h2>Stroke, carotid and intracranial stenosis</h2>
+  <a class="tool" href="nihss.html"><b>NIH Stroke Scale (NIHSS)</b><br>15 items, total 0–42 with severity.</a>
+  <a class="tool" href="mrs.html"><b>Modified Rankin Scale (mRS)</b><br>Disability 0–6; also for aneurysm and AVM outcomes.</a>
+  <a class="tool" href="barthel.html"><b>Barthel Index</b><br>Daily activities 0–100, for the 3-month stroke visit.</a>
 </main>
 </body>
 </html>

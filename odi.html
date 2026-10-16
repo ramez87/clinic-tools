@@ -1,0 +1,78 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Pain and ODI</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tools.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="./">&larr; Clinic tools</a>
+    <h1>Back pain score and Oswestry Disability Index</h1>
+    <p class="sub">For vertebral augmentation and basivertebral nerve ablation visits. Short item labels; patients complete the full form. Nothing entered is saved or sent.</p>
+  </header>
+  <section class="card" id="items" aria-label="Answers"></section>
+  <section class="card">
+    <div class="field"><label for="prev">Previous ODI % (optional)</label><input class="extra" type="number" id="prev" min="0" max="100" step="1" inputmode="numeric"></div>
+    <div class="field"><label for="prevnrs">Previous back pain 0-10 (optional)</label><input class="extra" type="number" id="prevnrs" min="0" max="10" step="1" inputmode="numeric"></div>
+  </section>
+  <section class="card result" aria-live="polite">
+    <div class="scores">
+      <div class="score"><span class="lbl">ODI</span><span class="val" id="val">--</span><span class="det" id="det"></span></div>
+    </div>
+    <div class="outlbl">For the note:</div>
+    <div class="out" id="out"></div>
+    <div class="actions">
+      <button class="btn" type="button" id="copy">Copy for note</button>
+      <button class="btn ghost" type="button" id="reset">Reset</button>
+      <span id="msg" class="det" hidden></span>
+    </div>
+  </section>
+  <div class="notes">
+    <p>ODI scoring: each section 0-5; total divided by the possible score (50, or 45 if one section is not answered) x 100. Bands (Fairbank 2000): 0-20% minimal, 21-40% moderate, 41-60% severe, 61-80% very severe, 81-100% extreme (bed-bound). Minimal detectable change 10 points.</p>
+    <p>Fairbank JC, Pynsent PB. The Oswestry Disability Index. Spine 2000;25:2940-52. Item labels are shortened here; use the licensed full questionnaire with patients.</p>
+  </div>
+</div>
+<script src="scorer.js"></script>
+<script>
+
+var S = [
+ ["s1","Pain intensity right now",["None","Very mild","Moderate","Fairly severe","Very severe","Worst imaginable"]],
+ ["s2","Personal care (washing, dressing)",["Normal, no extra pain","Normal but painful","Painful, slow and careful","Needs some help","Needs help every day","Does not dress, stays in bed"]],
+ ["s3","Lifting",["Heavy weights, no extra pain","Heavy weights, extra pain","Heavy only if conveniently placed","Light-medium only if conveniently placed","Very light weights only","Cannot lift or carry"]],
+ ["s4","Walking",["Any distance","Less than 1 mile","Less than 1/2 mile","Less than 100 yards","Only with a stick or crutches","In bed most of the time"]],
+ ["s5","Sitting",["Any chair, as long as wanted","Favorite chair only","Less than 1 hour","Less than 30 minutes","Less than 10 minutes","Cannot sit"]],
+ ["s6","Standing",["As long as wanted","As long as wanted, extra pain","Less than 1 hour","Less than 30 minutes","Less than 10 minutes","Cannot stand"]],
+ ["s7","Sleeping",["Never disturbed by pain","Occasionally disturbed","Less than 6 hours","Less than 4 hours","Less than 2 hours","Cannot sleep"]],
+ ["s8","Sex life (if applicable)",["Normal, no extra pain","Normal, some extra pain","Nearly normal, very painful","Severely restricted","Nearly absent","None because of pain"]],
+ ["s9","Social life",["Normal, no extra pain","Normal, more pain","Limits only energetic interests","Goes out less often","Restricted to home","None because of pain"]],
+ ["s10","Travelling",["Anywhere, no pain","Anywhere, extra pain","Manages trips over 2 hours","Trips under 1 hour","Short necessary trips under 30 minutes","Only to get treatment"]]
+];
+var items = [{ id:"nrs", grp:"Pain score", name:"Back pain right now (0 = none, 10 = worst imaginable)", noPts:true,
+  opts:[0,1,2,3,4,5,6,7,8,9,10].map(function(n){return [String(n), n];}) }];
+S.forEach(function (s, i) {
+  var o = s[2].map(function (t, k) { return [t, k]; });
+  if (s[0] === "s8") o.push(["Not applicable", null]);
+  items.push({ id:s[0], grp: i === 0 ? "Oswestry Disability Index (10 sections, 0-5 each)" : null, name:(i+1) + ". " + s[1], stack:true, opts:o });
+});
+function band(p) { return p <= 20 ? "minimal" : p <= 40 ? "moderate" : p <= 60 ? "severe" : p <= 80 ? "very severe" : "extreme"; }
+Scorer.build({ items: items, compute: function (v) {
+  var sum = 0, n = 0, na = 0, miss = 0;
+  S.forEach(function (s) { var x = v[s[0]]; if (x === null) na++; else if (x === undefined) miss++; else { sum += x; n++; } });
+  var nrs = v.nrs, prev = Scorer.num("prev"), pnrs = Scorer.num("prevnrs");
+  var nrsTxt = nrs === undefined ? "" : " Back pain now (NRS): " + nrs + "/10" + (pnrs !== null ? " (previously " + pnrs + "/10)" : "") + ".";
+  if (n < 9) return { val:"--", det: n + " of 10 sections answered" + (n + na + miss < 10 ? "" : "") + "; need at least 9", warn:true,
+    note: "ODI: answer at least 9 of 10 sections." + nrsTxt };
+  var pct = Math.round(sum / (5 * n) * 100), b = band(pct), ch = "";
+  if (prev !== null) { var d = pct - prev; ch = "; previously " + prev + "%, change " + (d > 0 ? "+" : "") + d + " points" + (Math.abs(d) >= 10 ? ", beyond the 10-point minimal detectable change" : ", within the 10-point minimal detectable change"); }
+  return { val: pct + "%", det: b.charAt(0).toUpperCase() + b.slice(1) + " disability" + (n < 10 ? " (scored out of " + (5*n) + ")" : ""),
+    note: "Oswestry Disability Index (ODI): " + pct + "% (" + b + " disability" + ch + ")." + nrsTxt };
+}});
+
+</script>
+</body>
+</html>

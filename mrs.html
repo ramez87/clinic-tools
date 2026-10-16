@@ -1,0 +1,57 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>mRS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tools.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="./">&larr; Clinic tools</a>
+    <h1>Modified Rankin Scale (mRS)</h1>
+    <p class="sub">Global disability after stroke, hemorrhage or treatment. Used across aneurysm, AVM, stroke and carotid visits. Nothing entered is saved or sent.</p>
+  </header>
+  <section class="card" id="items" aria-label="Answers"></section>
+
+  <section class="card result" aria-live="polite">
+    <div class="scores">
+      <div class="score"><span class="lbl">mRS</span><span class="val" id="val">--</span><span class="det" id="det"></span></div>
+    </div>
+    <div class="outlbl">For the note:</div>
+    <div class="out" id="out"></div>
+    <div class="actions">
+      <button class="btn" type="button" id="copy">Copy for note</button>
+      <button class="btn ghost" type="button" id="reset">Reset</button>
+      <span id="msg" class="det" hidden></span>
+    </div>
+  </section>
+  <div class="notes">
+    <p>van Swieten JC, et al. Stroke 1988;19:604-7. Good outcome is usually defined as mRS 0-2.</p>
+  </div>
+</div>
+<script src="scorer.js"></script>
+<script>
+
+var O = [["0 - No symptoms",0],["1 - No significant disability: symptoms, but able to carry out all usual duties and activities",1],
+ ["2 - Slight disability: unable to do all previous activities, but looks after own affairs without help",2],
+ ["3 - Moderate disability: needs some help, but walks without assistance",3],
+ ["4 - Moderately severe disability: cannot walk without assistance and cannot attend to own bodily needs without help",4],
+ ["5 - Severe disability: bedridden, incontinent, needs constant nursing care",5],["6 - Dead",6]];
+var L = ["no symptoms","no significant disability","slight disability","moderate disability","moderately severe disability","severe disability","dead"];
+Scorer.build({ items:[
+  { id:"now", name:"Current mRS", stack:true, noPts:true, opts:O },
+  { id:"pre", grp:"Optional", name:"Pre-event mRS (before the stroke, bleed or procedure)", stack:true, noPts:true, opts:O.slice(0,6) }
+], compute:function (v) {
+  if (v.now === undefined) return { val:"--", det:"Choose the current mRS", note:"Modified Rankin Scale (mRS): ***" };
+  var t = "Modified Rankin Scale (mRS): " + v.now + " (" + L[v.now] + ").";
+  if (v.pre !== undefined) t += " Pre-event mRS: " + v.pre + " (" + L[v.pre] + ").";
+  return { val: String(v.now), det: L[v.now].charAt(0).toUpperCase() + L[v.now].slice(1), note:t };
+}});
+
+</script>
+</body>
+</html>

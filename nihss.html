@@ -1,0 +1,69 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>NIHSS</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tools.css">
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="./">&larr; Clinic tools</a>
+    <h1>NIH Stroke Scale (NIHSS)</h1>
+    <p class="sub">For stroke, carotid and intracranial stenosis visits. Score what the patient does on the first attempt. Nothing entered is saved or sent.</p>
+  </header>
+  <section class="card" id="items" aria-label="Answers"></section>
+
+  <section class="card result" aria-live="polite">
+    <div class="scores">
+      <div class="score"><span class="lbl">NIHSS</span><span class="val" id="val">--</span><span class="det" id="det"></span></div>
+    </div>
+    <div class="outlbl">For the note:</div>
+    <div class="out" id="out"></div>
+    <div class="actions">
+      <button class="btn" type="button" id="copy">Copy for note</button>
+      <button class="btn ghost" type="button" id="reset">Reset</button>
+      <span id="msg" class="det" hidden></span>
+    </div>
+  </section>
+  <div class="notes">
+    <p>Total 0-42. Severity: 0 none, 1-4 minor, 5-15 moderate, 16-20 moderate to severe, 21-42 severe. Untestable (UN) items are not added to the total.</p>
+    <p>Brott T, et al. Stroke 1989;20:864-70. Follow the official NIH Stroke Scale instructions for each item.</p>
+  </div>
+</div>
+<script src="scorer.js"></script>
+<script>
+
+var UN = ["UN - amputation or joint fusion", null];
+var I = [
+ ["i1a","1a. Level of consciousness",[["Alert",0],["Not alert, arousable by minor stimulation",1],["Not alert, needs repeated or painful stimulation",2],["Unresponsive or reflex responses only",3]]],
+ ["i1b","1b. LOC questions (month, age)",[["Both correct",0],["One correct",1],["Neither correct",2]]],
+ ["i1c","1c. LOC commands (open/close eyes, grip/release)",[["Both correct",0],["One correct",1],["Neither correct",2]]],
+ ["i2","2. Best gaze",[["Normal",0],["Partial gaze palsy",1],["Forced deviation or total gaze paresis",2]]],
+ ["i3","3. Visual fields",[["No visual loss",0],["Partial hemianopia",1],["Complete hemianopia",2],["Bilateral hemianopia (including cortical blindness)",3]]],
+ ["i4","4. Facial palsy",[["Normal",0],["Minor paralysis",1],["Partial paralysis",2],["Complete paralysis (one or both sides)",3]]],
+ ["i5a","5a. Motor arm, left",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
+ ["i5b","5b. Motor arm, right",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
+ ["i6a","6a. Motor leg, left",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
+ ["i6b","6b. Motor leg, right",[["No drift",0],["Drift",1],["Some effort against gravity",2],["No effort against gravity",3],["No movement",4],UN]],
+ ["i7","7. Limb ataxia",[["Absent",0],["Present in one limb",1],["Present in two limbs",2],["UN - amputation or joint fusion",null]]],
+ ["i8","8. Sensory",[["Normal",0],["Mild to moderate loss",1],["Severe to total loss",2]]],
+ ["i9","9. Best language",[["No aphasia",0],["Mild to moderate aphasia",1],["Severe aphasia",2],["Mute, global aphasia",3]]],
+ ["i10","10. Dysarthria",[["Normal",0],["Mild to moderate",1],["Severe",2],["UN - intubated or other barrier",null]]],
+ ["i11","11. Extinction and inattention",[["None",0],["Inattention in one modality",1],["Profound inattention in more than one modality",2]]]
+];
+function band(t) { return t === 0 ? "no stroke symptoms" : t <= 4 ? "minor" : t <= 15 ? "moderate" : t <= 20 ? "moderate to severe" : "severe"; }
+Scorer.build({ items: I.map(function (x) { return { id:x[0], name:x[1], stack:true, opts:x[2] }; }), compute:function (v) {
+  var t = 0, n = 0, parts = [], un = [];
+  I.forEach(function (x) { var s = v[x[0]]; if (s === undefined) return; n++; var code = x[1].split(".")[0]; if (s === null) un.push(code); else { t += s; if (s > 0) parts.push(code + " " + s); } });
+  if (n < I.length) return { val: String(t), det: n + " of 15 items answered", warn:true, note:"NIH Stroke Scale (NIHSS): *** (incomplete: " + n + " of 15 items)." };
+  var note = "NIH Stroke Scale (NIHSS): " + t + " (" + band(t) + ")" + (parts.length ? "; items: " + parts.join(", ") : "") + (un.length ? "; untestable: " + un.join(", ") : "") + ".";
+  return { val:String(t), det: band(t).charAt(0).toUpperCase() + band(t).slice(1), note: note };
+}});
+
+</script>
+</body>
+</html>
