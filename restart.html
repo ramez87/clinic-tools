@@ -1,0 +1,139 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Blood thinner restart</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<link rel="stylesheet" href="tools.css">
+<style>
+.q { border-bottom:1px solid var(--line); }
+.checks label { display:flex; gap:8px; align-items:flex-start; padding:4px 0; font-size:.92rem; }
+.checks input { margin-top:3px; }
+ul.steps { margin:0; padding-left:18px; font-size:.9rem; display:flex; flex-direction:column; gap:4px; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a class="back" href="./">&larr; Clinic tools</a>
+    <h1>Blood thinner restart after intracranial hemorrhage</h1>
+    <p class="sub">Restart windows from our follow-up protocol (section 18). Always restart only after a stable CT. Nothing entered is saved or sent.</p>
+  </header>
+
+  <section class="card" aria-label="Inputs">
+    <div class="q"><div class="name">Bleed</div>
+      <div class="seg stack" id="bleed">
+        <label><input type="radio" name="bleed" value="sdh"><span>Chronic subdural hematoma, treated</span></label>
+        <label><input type="radio" name="bleed" value="deep"><span>Intraparenchymal hemorrhage, deep</span></label>
+        <label><input type="radio" name="bleed" value="lobar"><span>Intraparenchymal hemorrhage, lobar or amyloid</span></label>
+        <label><input type="radio" name="bleed" value="sah"><span>Aneurysmal SAH, aneurysm secured</span></label>
+      </div></div>
+    <div class="q"><div class="name">Medicine to restart</div>
+      <div class="seg" id="drug">
+        <label><input type="radio" name="drug" value="ap"><span>Antiplatelet</span></label>
+        <label><input type="radio" name="drug" value="ac"><span>Anticoagulant</span></label>
+        <label><input type="radio" name="drug" value="valve"><span>Mechanical heart valve</span></label>
+      </div></div>
+    <div class="q"><div class="name">Clot risk (anticoagulant only)<small>High if any box is checked</small></div>
+      <div class="checks">
+        <label><input type="checkbox" class="hr"> Mechanical mitral or older-generation valve, or valve with prior stroke</label>
+        <label><input type="checkbox" class="hr"> AFib with CHA2DS2-VASc 5 or more, or stroke within 3 months</label>
+        <label><input type="checkbox" class="hr"> Venous thromboembolism within 3 months</label>
+        <label><input type="checkbox" class="hr"> Severe thrombophilia</label>
+      </div></div>
+    <div class="q"><div class="name">Special situations</div>
+      <div class="checks">
+        <label><input type="checkbox" id="cor"> Recent coronary stent (SDH)</label>
+        <label><input type="checkbox" id="vte"> VTE within 2 weeks of the bleed</label>
+      </div></div>
+    <div class="field" style="padding-top:10px"><label for="d0">Date of bleed (or SDH treatment / aneurysm securing)</label><input type="date" id="d0"></div>
+  </section>
+
+  <section class="card result" aria-live="polite">
+    <div class="scores"><div class="score"><span class="lbl">Restart window</span><span class="val" id="val">--</span><span class="det" id="det"></span></div></div>
+    <ul class="steps" id="steps"></ul>
+    <div class="outlbl">For the note:</div>
+    <div class="out" id="out"></div>
+    <div class="actions">
+      <button class="btn" type="button" id="copy">Copy for note</button>
+      <button class="btn ghost" type="button" id="reset">Reset</button>
+      <span id="msg" class="det" hidden></span>
+    </div>
+  </section>
+
+  <div class="notes">
+    <p>Step 1, DVT prophylaxis: compression devices from day 1; prophylactic heparin or enoxaparin 24-48 hours after onset once repeat CT is stable (SAH: after the aneurysm is secured; craniotomy or EVD: per neurosurgery).</p>
+    <p>Doses: prophylaxis enoxaparin 40 mg daily (CrCl under 30: 30 mg) or heparin 5,000 units SC every 8 hours. Apixaban 5 mg twice daily (2.5 mg if 2 of: age 80 or more, weight 60 kg or less, creatinine 1.5 or more) or rivaroxaban 20 mg daily with the evening meal (15 mg if CrCl 50 or less). Heparin drip about 12 units/kg/hr, aPTT 50-70 s or anti-Xa 0.3-0.5, NMH nomogram.</p>
+    <p>Source: NMH neurointerventional follow-up protocol, section 18. Clinical judgment and the prescribing team decide each case.</p>
+  </div>
+</div>
+<script>
+(function () {
+  // weeks [min, max]; "days" and hours handled as text
+  var T = {
+    sdh:   { ap:[2,2],  acH:[2,2], acL:[4,4], valve:{d:[7,7]} },
+    deep:  { ap:[2,4],  acH:[2,2], acL:[4,4], valve:{d:[14,14]} },
+    lobar: { ap:[2,4],  acH:[7,8], acL:[7,8], lobar:true, valve:{d:[14,14]} },
+    sah:   { ap:"days", acH:[1,2], acL:[1,2], valve:{h:[24,72]} }
+  };
+  var NAMES = { sdh:"treated chronic subdural hematoma", deep:"deep intraparenchymal hemorrhage", lobar:"lobar or amyloid intraparenchymal hemorrhage", sah:"aneurysmal SAH (aneurysm secured)" };
+  function q(n) { var c = document.querySelector('input[name="' + n + '"]:checked'); return c ? c.value : null; }
+  function addDays(d, n) { var x = new Date(d.getTime()); x.setDate(x.getDate() + n); return x; }
+  function fmt(d) { return (d.getMonth() + 1) + "/" + d.getDate() + "/" + d.getFullYear(); }
+  function compute() {
+    var b = q("bleed"), g = q("drug"), steps = [], note = "";
+    var high = Array.prototype.some.call(document.querySelectorAll(".hr"), function (x) { return x.checked; });
+    var d0v = document.getElementById("d0").value, d0 = d0v ? new Date(d0v + "T12:00:00") : null;
+    var val = "--", det = "", lo = null, hi = null, txt = "";
+    if (!b || !g) { document.getElementById("val").textContent = "--"; document.getElementById("det").textContent = "Choose the bleed and the medicine"; document.getElementById("steps").innerHTML = ""; document.getElementById("out").textContent = "Antithrombotic restart plan: ***"; return; }
+    var t = T[b];
+    if (g === "ap") {
+      if (t.ap === "days") { val = "Days"; txt = "antiplatelet within days of securing the aneurysm"; }
+      else { lo = t.ap[0] * 7; hi = t.ap[1] * 7; val = t.ap[0] === t.ap[1] ? t.ap[0] + " wk" : t.ap[0] + "-" + t.ap[1] + " wk"; txt = "antiplatelet at " + val.replace("wk", "weeks"); }
+      if (b === "sdh" && document.getElementById("cor").checked) { lo = 7; hi = 7; val = "1 wk"; txt = "antiplatelet at 1 week (recent coronary stent), with cardiology"; }
+    } else if (g === "ac") {
+      var w = high ? t.acH : t.acL; lo = w[0] * 7; hi = w[1] * 7;
+      val = (w[0] === w[1] ? w[0] : w[0] + "-" + w[1]) + " wk";
+      txt = "anticoagulant at " + val.replace("wk", "weeks") + " (" + (high ? "high" : "lower") + " clot risk)" + (t.lobar ? ", or left atrial appendage closure" : "");
+      steps.push("CT head 2 weeks after restarting the anticoagulant.");
+      steps.push("Prefer a DOAC. No antiplatelet plus anticoagulant unless both are needed.");
+    } else {
+      if (t.valve.h) { val = "24-72 h"; lo = 1; hi = 3; txt = "mechanical valve anticoagulation at 24-72 hours"; }
+      else { lo = t.valve.d[0]; hi = t.valve.d[1]; val = (lo / 7) + " wk"; txt = "mechanical valve anticoagulation at " + (lo / 7) + " week" + (lo > 7 ? "s" : ""); }
+      steps.push("Low-intensity heparin drip first (no bolus), then warfarin, with cardiology.");
+    }
+    if (document.getElementById("vte").checked && g !== "ap") steps.push("VTE within 2 weeks of the bleed: IVC filter instead of early anticoagulation.");
+    steps.push("Restart only after a stable CT.");
+    steps.push("Stop primary-prevention aspirin.");
+    if (b === "lobar" && g === "ac") steps.push("Recurrence or high rebleed risk: consider left atrial appendage closure.");
+    if (d0 && lo !== null) {
+      var a = addDays(d0, lo), z = addDays(d0, hi), today = new Date(), since = Math.floor((today - d0) / 86400000);
+      det = "Earliest " + fmt(a) + (hi !== lo ? ", by " + fmt(z) : "") + " | Day " + since + " today";
+      txt += ", on or after " + fmt(a) + (hi !== lo ? " (window " + fmt(a) + " to " + fmt(z) + ")" : "");
+    } else if (!d0) det = "Add the date to get calendar dates";
+    note = "Antithrombotic restart plan after " + NAMES[b] + (d0 ? " on " + fmt(d0) : "") + ": " + txt + ", after a stable CT (NMH protocol section 18).";
+    if (g === "ac") note += " CT head 2 weeks after restarting.";
+    if (g === "valve") note += " Heparin drip without bolus, then warfarin, with cardiology.";
+    document.getElementById("val").textContent = val;
+    document.getElementById("det").textContent = det;
+    document.getElementById("steps").innerHTML = steps.map(function (s) { return "<li>" + s + "</li>"; }).join("");
+    document.getElementById("out").textContent = note;
+  }
+  document.addEventListener("change", compute);
+  document.getElementById("d0").addEventListener("input", compute);
+  document.getElementById("reset").addEventListener("click", function () {
+    document.querySelectorAll("input[type=radio], input[type=checkbox]").forEach(function (x) { x.checked = false; });
+    document.getElementById("d0").value = ""; document.getElementById("msg").hidden = true; compute();
+  });
+  document.getElementById("copy").addEventListener("click", function () {
+    var el = document.getElementById("out"), msg = document.getElementById("msg");
+    function sel() { var r = document.createRange(); r.selectNodeContents(el); var s = getSelection(); s.removeAllRanges(); s.addRange(r); msg.textContent = "Selected - press Ctrl+C"; msg.hidden = false; }
+    try { navigator.clipboard.writeText(el.textContent).then(function () { msg.textContent = "Copied"; msg.hidden = false; }, sel); } catch (e) { sel(); }
+  });
+  compute();
+})();
+</script>
+</body>
+</html>

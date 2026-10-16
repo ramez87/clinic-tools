@@ -15,7 +15,6 @@
     <h1>Back pain score and Oswestry Disability Index</h1>
     <p class="sub">For vertebral augmentation and basivertebral nerve ablation visits. Short item labels; patients complete the full form. Nothing entered is saved or sent.</p>
   </header>
-  <section class="card" id="items" aria-label="Answers"></section>
   <section class="card">
     <div class="field"><label for="prev">Previous ODI % (optional)</label><input class="extra" type="number" id="prev" min="0" max="100" step="1" inputmode="numeric"></div>
     <div class="field"><label for="prevnrs">Previous back pain 0-10 (optional)</label><input class="extra" type="number" id="prevnrs" min="0" max="10" step="1" inputmode="numeric"></div>
@@ -32,6 +31,7 @@
       <span id="msg" class="det" hidden></span>
     </div>
   </section>
+  <section class="card" id="items" aria-label="Answers"></section>
   <div class="notes">
     <p>ODI scoring: each section 0-5; total divided by the possible score (50, or 45 if one section is not answered) x 100. Bands (Fairbank 2000): 0-20% minimal, 21-40% moderate, 41-60% severe, 61-80% very severe, 81-100% extreme (bed-bound). Minimal detectable change 10 points.</p>
     <p>Fairbank JC, Pynsent PB. The Oswestry Disability Index. Spine 2000;25:2940-52. Item labels are shortened here; use the licensed full questionnaire with patients.</p>
@@ -65,8 +65,10 @@ Scorer.build({ items: items, compute: function (v) {
   S.forEach(function (s) { var x = v[s[0]]; if (x === null) na++; else if (x === undefined) miss++; else { sum += x; n++; } });
   var nrs = v.nrs, prev = Scorer.num("prev"), pnrs = Scorer.num("prevnrs");
   var nrsTxt = nrs === undefined ? "" : " Back pain now (NRS): " + nrs + "/10" + (pnrs !== null ? " (previously " + pnrs + "/10)" : "") + ".";
-  if (n < 9) return { val:"--", det: n + " of 10 sections answered" + (n + na + miss < 10 ? "" : "") + "; need at least 9", warn:true,
-    note: "ODI: answer at least 9 of 10 sections." + nrsTxt };
+  if (n === 0) return { val:"--", det:"Answer the sections below", note:"Oswestry Disability Index (ODI): ***" + nrsTxt };
+  if (n < 9) { var pp = Math.round(sum / (5 * n) * 100);
+    return { val: pp + "%", det: "So far: " + n + " of 10 sections answered (need at least 9)", warn:true,
+    note: "Oswestry Disability Index (ODI): " + pp + "% [Incomplete: " + n + " of 10 sections answered]." + nrsTxt }; }
   var pct = Math.round(sum / (5 * n) * 100), b = band(pct), ch = "";
   if (prev !== null) { var d = pct - prev; ch = "; previously " + prev + "%, change " + (d > 0 ? "+" : "") + d + " points" + (Math.abs(d) >= 10 ? ", beyond the 10-point minimal detectable change" : ", within the 10-point minimal detectable change"); }
   return { val: pct + "%", det: b.charAt(0).toUpperCase() + b.slice(1) + " disability" + (n < 10 ? " (scored out of " + (5*n) + ")" : ""),

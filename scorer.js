@@ -25,8 +25,17 @@ var Scorer = (function () {
       });
       return v;
     }
+    // Floating score bar: visible whenever the result card is scrolled out of view
+    var bar = document.createElement("div"); bar.className = "floatbar"; bar.hidden = true;
+    bar.innerHTML = '<span class="fv"></span><span class="fd"></span><button type="button" class="btn ghost">Result</button>';
+    document.body.appendChild(bar);
+    var card = document.querySelector(".result");
+    bar.querySelector("button").addEventListener("click", function () { card.scrollIntoView({ behavior:"smooth", block:"start" }); });
+    if ("IntersectionObserver" in window) new IntersectionObserver(function (es) { bar.hidden = es[0].isIntersecting; }).observe(card);
     function compute() {
       var r = cfg.compute(values());
+      bar.querySelector(".fv").textContent = r.val;
+      bar.querySelector(".fd").textContent = r.det || "";
       document.getElementById("val").textContent = r.val;
       var det = document.getElementById("det");
       det.textContent = r.det || "";
