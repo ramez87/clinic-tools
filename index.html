@@ -19,41 +19,81 @@ p { margin:0; color:var(--muted); }
 .tool:hover, .tool:focus-visible { border-color:var(--accent); outline:none; }
 .tool b { color:var(--accent); }
 .soon { opacity:.6; }
+.toggle { display:inline-flex; align-self:flex-start; border:1px solid var(--accent); border-radius:8px; overflow:hidden; margin-top:6px; }
+.toggle button { font:inherit; border:0; background:transparent; color:var(--accent); padding:7px 16px; cursor:pointer; font-weight:700; }
+.toggle button[aria-pressed="true"] { background:var(--accent); color:#fff; }
+@media (prefers-color-scheme: dark) { .toggle button[aria-pressed="true"] { color:#0b1a1c; } }
+.toggle button:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+[hidden] { display:none !important; }
 </style>
 </head>
 <body>
 <main>
   <h1>Neurointerventional clinic tools</h1>
   <p>Scoring tools for clinic visits. Nothing entered here is saved or sent anywhere.</p>
+  <div class="toggle" role="group" aria-label="View">
+    <button type="button" id="vN" aria-pressed="true">Nurse</button>
+    <button type="button" id="vP" aria-pressed="false">Physician</button>
+  </div>
 
-  <h2>Aneurysm</h2>
-  <a class="tool" href="aneurysm.html"><b>Unruptured aneurysm rupture risk</b><br>PHASES, ISUIA and estimated lifetime risk, with text for the note.</a>
-  <a class="tool" href="risks.html"><b>Procedure risks and natural history</b><br>Complications, major complications, death and retreatment by disease and treatment, with a patient view for screenshare. All diseases.</a>
+  <section id="nurse" style="display:flex;flex-direction:column;gap:10px">
+    <h2>Pulsatile tinnitus, IIH and CSF leak</h2>
+    <a class="tool" href="thi.html"><b>Tinnitus Handicap Inventory (THI)</b><br>25 questions, total 0–100 with grade.</a>
+    <a class="tool" href="hit6.html"><b>HIT-6 headache score</b><br>Headache Impact Test total and impact category.</a>
 
-  <h2>Bleeds and blood thinners</h2>
-  <a class="tool" href="restart.html"><b>Blood thinner restart after a brain bleed</b><br>SDH, intraparenchymal hemorrhage or secured SAH: restart window and dates from our protocol.</a>
+    <h2>Back pain</h2>
+    <a class="tool" href="odi.html"><b>Back pain score (NRS) and ODI</b><br>NRS 0–10 (equivalent to VAS) and Oswestry Disability Index, with change from the last visit.</a>
 
-  <h2>Brain AVM</h2>
-  <a class="tool" href="avm.html"><b>AVM grading</b><br>Spetzler-Martin, Spetzler-Ponce and Lawton-Young supplementary grade.</a>
+    <h2>Stroke, aneurysm and AVM visits</h2>
+    <a class="tool" href="mrs.html"><b>Modified Rankin Scale (mRS)</b><br>Disability 0–6, with a picture of each grade.</a>
+    <a class="tool" href="nihss.html"><b>NIH Stroke Scale (NIHSS)</b><br>15 items, total 0–42 with severity.</a>
+  </section>
 
-  <h2>Dural AV fistula</h2>
-  <a class="tool" href="davf.html"><b>Borden and Cognard</b><br>Classify from the angiogram; flags cortical venous drainage.</a>
+  <section id="phys" hidden style="flex-direction:column;gap:10px">
+    <h2>Risks and natural history</h2>
+    <a class="tool" href="risks.html"><b>Procedure risks and natural history</b><br>Complications, major complications, death and retreatment by disease and treatment, with a patient view for screenshare.</a>
 
-  <h2>Pulsatile tinnitus and IIH</h2>
-  <a class="tool" href="thi.html"><b>Tinnitus Handicap Inventory (THI)</b><br>25 questions, total 0–100 with grade.</a>
-  <a class="tool" href="hit6.html"><b>HIT-6</b><br>Headache Impact Test, for IIH headache before and after stenting.</a>
+    <h2>Aneurysm</h2>
+    <a class="tool" href="aneurysm.html"><b>Unruptured aneurysm rupture risk</b><br>PHASES, ISUIA and estimated lifetime risk, with text for the note.</a>
 
-  <h2>Spinal CSF leak</h2>
-  <a class="tool" href="bern.html"><b>Bern score</b><br>Brain MRI score for spontaneous intracranial hypotension.</a>
-  <a class="tool" href="hit6.html"><b>HIT-6</b><br>Headache Impact Test total and impact category.</a>
+    <h2>Bleeds and blood thinners</h2>
+    <a class="tool" href="restart.html"><b>Blood thinner restart after a brain bleed</b><br>SDH, intraparenchymal hemorrhage or secured SAH: restart window and dates from our protocol.</a>
 
-  <h2>Vertebral augmentation and basivertebral nerve ablation</h2>
-  <a class="tool" href="odi.html"><b>Back pain score (NRS) and ODI</b><br>NRS 0–10 (equivalent to VAS) and Oswestry Disability Index, with change from the last visit.</a>
+    <h2>Brain AVM</h2>
+    <a class="tool" href="avm.html"><b>AVM grading</b><br>Spetzler-Martin, Spetzler-Ponce and Lawton-Young supplementary grade.</a>
 
-  <h2>Stroke, carotid and intracranial stenosis</h2>
-  <a class="tool" href="nihss.html"><b>NIH Stroke Scale (NIHSS)</b><br>15 items, total 0–42 with severity.</a>
-  <a class="tool" href="mrs.html"><b>Modified Rankin Scale (mRS)</b><br>Disability 0–6; also for aneurysm and AVM outcomes.</a>
-  <a class="tool" href="barthel.html"><b>Barthel Index</b><br>Daily activities 0–100, for the 3-month stroke visit.</a>
+    <h2>Dural AV fistula</h2>
+    <a class="tool" href="davf.html"><b>Borden and Cognard</b><br>Classify from the angiogram; flags cortical venous drainage.</a>
+
+    <h2>Pulsatile tinnitus and IIH</h2>
+    <a class="tool" href="thi.html"><b>Tinnitus Handicap Inventory (THI)</b><br>25 questions, total 0–100 with grade.</a>
+    <a class="tool" href="hit6.html"><b>HIT-6</b><br>Headache Impact Test, for IIH headache before and after stenting.</a>
+
+    <h2>Spinal CSF leak</h2>
+    <a class="tool" href="bern.html"><b>Bern score</b><br>Brain MRI score for spontaneous intracranial hypotension.</a>
+    <a class="tool" href="hit6.html"><b>HIT-6</b><br>Headache Impact Test total and impact category.</a>
+
+    <h2>Vertebral augmentation and basivertebral nerve ablation</h2>
+    <a class="tool" href="odi.html"><b>Back pain score (NRS) and ODI</b><br>NRS 0–10 (equivalent to VAS) and Oswestry Disability Index, with change from the last visit.</a>
+
+    <h2>Stroke, carotid and intracranial stenosis</h2>
+    <a class="tool" href="nihss.html"><b>NIH Stroke Scale (NIHSS)</b><br>15 items, total 0–42 with severity.</a>
+    <a class="tool" href="mrs.html"><b>Modified Rankin Scale (mRS)</b><br>Disability 0–6; also for aneurysm and AVM outcomes.</a>
+  </section>
 </main>
+<script>
+(function () {
+  var n = document.getElementById("nurse"), p = document.getElementById("phys"), bN = document.getElementById("vN"), bP = document.getElementById("vP");
+  function set(phys) {
+    n.hidden = phys; p.hidden = !phys; p.style.display = phys ? "flex" : "";
+    bN.setAttribute("aria-pressed", !phys); bP.setAttribute("aria-pressed", phys);
+    try { localStorage.setItem("toolsView", phys ? "phys" : "nurse"); } catch (e) {}
+  }
+  bN.addEventListener("click", function () { set(false); });
+  bP.addEventListener("click", function () { set(true); });
+  var v = null; try { v = localStorage.getItem("toolsView"); } catch (e) {}
+  set(v === "phys");
+})();
+</script>
 </body>
 </html>

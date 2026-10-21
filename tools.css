@@ -1,4 +1,4 @@
-/* Shared styles for the scorer pages (odi, mrs, avm, davf, nihss, barthel, risk). Same look as bern.html and hit6.html. */
+/* Shared styles for the scorer pages (odi, mrs, avm, davf, nihss, risk). Same look as bern.html and hit6.html. */
 :root {
   --bg:#f4f6f8; --surface:#fff; --ink:#17212b; --muted:#5b6876; --line:#d9e0e7;
   --accent:#0b6e74; --accent-ink:#fff; --accent-soft:#dcefef; --warn:#b7791f;
