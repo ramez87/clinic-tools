@@ -1,6 +1,6 @@
 # NIR Clinic Tools
 
-Scoring tools for the neurointerventional clinic. The main page has a Nurse view (default: THI, HIT-6, NRS/ODI, mRS, NIHSS) and a Physician view (all tools, by disease); the choice is remembered per browser. Static pages; nothing entered is saved or sent.
+Scoring tools for the neurointerventional clinic. The main page has two tabs with no overlap: Visit scores (default: THI, HIT-6, NRS/ODI, mRS, NIHSS) and Planning tools (procedure risks, PHASES/ISUIA, AVM grading, Borden/Cognard, Bern, blood thinner restart); the tab is remembered per browser. Static pages; nothing entered is saved or sent.
 
 - Procedure risks (risks.html): natural history and treatment risks for aneurysms, AVM/dAVF, venous and CSF, SDH, spine, carotid and ICAD; physician and patient views. Self-contained, also works as an offline file
 - Aneurysm: rupture risk (PHASES, ISUIA, lifetime)
