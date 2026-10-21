@@ -2,6 +2,7 @@
 
 Scoring tools for the neurointerventional clinic, grouped by disease on the main page. Static pages; nothing entered is saved or sent.
 
+- Procedure risks (risks.html): natural history and treatment risks for aneurysms, AVM/dAVF, venous and CSF, SDH, spine, carotid and ICAD; physician and patient views. Self-contained, also works as an offline file
 - Aneurysm: rupture risk (PHASES, ISUIA, lifetime)
 - Brain AVM: Spetzler-Martin, Spetzler-Ponce, Lawton-Young supplementary
 - Dural AV fistula: Borden and Cognard
