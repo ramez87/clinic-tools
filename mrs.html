@@ -7,6 +7,16 @@
 <title>mRS</title>
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
 <link rel="stylesheet" href="tools.css?v=5">
+<style>
+.strip { display:grid; grid-template-columns:repeat(7,minmax(0,1fr)); gap:6px; }
+@media (max-width:560px) { .strip { grid-template-columns:repeat(4,minmax(0,1fr)); } }
+.st { display:flex; flex-direction:column; align-items:center; gap:4px; text-align:center; padding:8px 4px; border:1px solid var(--line); border-radius:8px; color:var(--ink); }
+.st svg { width:44px; height:44px; fill:none; stroke:currentColor; stroke-width:1.6; stroke-linecap:round; stroke-linejoin:round; }
+.st .g { font-family:var(--font-mono); font-weight:600; font-size:.9rem; background:var(--accent-soft); color:var(--ink); border-radius:5px; padding:1px 8px; }
+.st .t { font-size:.78rem; color:var(--muted); line-height:1.25; }
+.st.on { border-color:var(--accent); border-width:2px; background:var(--accent-soft); }
+.st.on .g { background:var(--accent); color:var(--accent-ink); }
+</style>
 </head>
 <body>
 <div class="wrap">
@@ -27,6 +37,10 @@
       <button class="btn ghost" type="button" id="reset">Reset</button>
       <span id="msg" class="det" hidden></span>
     </div>
+  </section>
+  <section class="card" aria-label="mRS at a glance">
+    <div class="grp">Scale at a glance</div>
+    <div class="strip" id="strip"><div class="st" data-g="0"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="4" r="2"/><path d="M12 6v8M12 8l-4-4M12 8l4-4M12 14l-3 7M12 14l3 7"/></svg><span class="g">mRS 0</span><span class="t">No symptoms</span></div><div class="st" data-g="1"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="4" r="2"/><path d="M12 6l-1 8M12 8l-3 4M12 8l3 3M11 14l-3 7M11 14l4 6"/></svg><span class="g">mRS 1</span><span class="t">No significant disability</span></div><div class="st" data-g="2"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="4" r="2"/><path d="M12 6v8M12 8l-3 5M12 8l3 5M12 14l-2 7M12 14l2 7"/></svg><span class="g">mRS 2</span><span class="t">Slight disability</span></div><div class="st" data-g="3"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="4" r="2"/><path d="M11 6l-1 8M11 8l4 4M15 12v9M10 14l-2 7M10 14l2 7"/></svg><span class="g">mRS 3</span><span class="t">Moderate disability</span></div><div class="st" data-g="4"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="10" cy="4" r="2"/><path d="M10 6v8M10 8l5 3M14 11h4M15 11l-1 10M18 11l1 10M10 14l-2 7M10 14l2 7"/></svg><span class="g">mRS 4</span><span class="t">Moderately severe disability</span></div><div class="st" data-g="5"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="12" r="2"/><path d="M8 13h11M2 16h20M2 10v10M22 13v7"/></svg><span class="g">mRS 5</span><span class="t">Severe disability</span></div><div class="st" data-g="6"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M2 12h6l2-4 2 8 2-4h8"/></svg><span class="g">mRS 6</span><span class="t">Dead</span></div></div>
   </section>
   <p class="sub warn" id="dimtip" hidden>A grade was chosen directly, so the interview is ignored. Click any interview answer to use the interview instead.</p>
   <section class="card" id="items" aria-label="Answers"></section>
@@ -96,6 +110,13 @@ Scorer.build({ items: items, compute:function (v) {
   return { val: String(g), det: L[g].charAt(0).toUpperCase() + L[g].slice(1) + " (" + how + ")", note:s };
 }});
 
+
+// Highlight the current grade in the picture strip
+(function () {
+  var v = document.getElementById("val");
+  function hi() { var g = v.textContent.trim(); document.querySelectorAll("#strip .st").forEach(function (c) { c.classList.toggle("on", c.getAttribute("data-g") === g); }); }
+  new MutationObserver(hi).observe(v, { childList:true, characterData:true, subtree:true }); hi();
+})();
 </script>
 </body>
 </html>
