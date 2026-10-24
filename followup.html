@@ -1,0 +1,549 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex">
+<title>Follow-up planner</title>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible:wght@400;700&family=IBM+Plex+Mono:wght@400;600&display=swap">
+<style>
+/* Self-contained: works offline (fonts fall back to system fonts). Same look as Procedure risks. */
+:root {
+  --bg:#f4f6f8; --surface:#fff; --ink:#17212b; --muted:#5b6876; --line:#d9e0e7;
+  --accent:#0b6e74; --accent-ink:#fff; --accent-soft:#dcefef; --med:#7a5a12; --med-soft:#f6efdd; --img:#3d5a99; --img-soft:#e6ecf8;
+  --font-body:"Atkinson Hyperlegible","Segoe UI",system-ui,sans-serif;
+  --font-mono:"IBM Plex Mono",ui-monospace,Menlo,monospace;
+}
+@media (prefers-color-scheme: dark) { :root { --bg:#11171d; --surface:#1a232c; --ink:#e6edf3; --muted:#9aa8b6; --line:#2c3946; --accent:#4fb9bd; --accent-ink:#0b1a1c; --accent-soft:#1d3a3c; --med:#e0b866; --med-soft:#33291a; --img:#9db4ea; --img-soft:#1f2a40; color-scheme:dark; } }
+* { box-sizing:border-box; }
+body { margin:0; background:var(--bg); color:var(--ink); font-family:var(--font-body); font-size:15px; line-height:1.45; padding:20px 16px 40px; }
+.wrap { max-width:860px; margin:0 auto; display:flex; flex-direction:column; gap:14px; }
+a { color:var(--accent); }
+h1 { font-size:1.35rem; margin:4px 0 0; }
+h2 { font-size:1.15rem; margin:0; }
+h3 { font-size:1rem; margin:0; }
+.sub { color:var(--muted); margin:0; max-width:70ch; }
+.bar { display:flex; flex-wrap:wrap; gap:10px; align-items:center; }
+input[type=search], input[type=date] { font:inherit; padding:7px 10px; border:1px solid var(--line); border-radius:8px; background:var(--surface); color:var(--ink); }
+input[type=search] { flex:1; min-width:160px; }
+label.dt { display:flex; gap:8px; align-items:center; font-size:.9rem; color:var(--muted); }
+button:focus-visible, input:focus-visible, a:focus-visible { outline:3px solid var(--accent); outline-offset:2px; }
+.grp { font-size:.8rem; color:var(--muted); letter-spacing:.04em; text-transform:uppercase; margin-top:6px; }
+.list { display:grid; grid-template-columns:repeat(auto-fill,minmax(230px,1fr)); gap:8px; }
+.item { font:inherit; text-align:left; cursor:pointer; background:var(--surface); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:11px 14px; }
+.item:hover { border-color:var(--accent); }
+.item b { display:block; }
+.item small { color:var(--muted); }
+.crumbs { display:flex; gap:6px; flex-wrap:wrap; font-size:.9rem; }
+.crumbs button { font:inherit; background:none; border:0; color:var(--accent); cursor:pointer; padding:0; text-decoration:underline; }
+.tabs { display:flex; flex-wrap:wrap; gap:6px; }
+.tab, .chip { font:inherit; cursor:pointer; padding:7px 12px; border-radius:8px; border:1px solid var(--line); background:var(--surface); color:var(--ink); }
+.tab[aria-selected="true"], .chip[aria-pressed="true"] { background:var(--accent-soft); border-color:var(--accent); font-weight:700; }
+.card { background:var(--surface); border:1px solid var(--line); border-radius:12px; padding:16px; display:flex; flex-direction:column; gap:10px; }
+.kind { font-size:.75rem; letter-spacing:.05em; text-transform:uppercase; font-weight:700; color:var(--accent); }
+ol.tl { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:6px; }
+ol.tl li { display:grid; grid-template-columns:110px 1fr; gap:10px; align-items:start; padding:8px 10px; border:1px solid var(--line); border-radius:9px; }
+ol.tl li.med { border-left:4px solid var(--med); background:var(--med-soft); }
+ol.tl li.img { border-left:4px solid var(--img); }
+ol.tl li.visit { border-left:4px solid var(--accent); }
+ol.tl li.note { border-left:4px solid var(--line); color:var(--muted); }
+.when { font-family:var(--font-mono); font-size:.85rem; font-weight:600; }
+.when small { display:block; font-weight:400; color:var(--muted); }
+.br { border:1px dashed var(--accent); border-radius:10px; padding:10px; display:flex; flex-direction:column; gap:8px; }
+.br .q { font-weight:700; font-size:.92rem; }
+.note2 { font-size:.9rem; background:var(--bg); border-radius:8px; padding:9px 12px; }
+.note2 ul { margin:4px 0 0; padding-left:18px; }
+textarea { width:100%; min-height:150px; font-family:var(--font-mono); font-size:.85rem; padding:10px; border:1px solid var(--line); border-radius:8px; background:var(--bg); color:var(--ink); }
+.btn { font:inherit; cursor:pointer; padding:7px 14px; border-radius:8px; border:1px solid var(--accent); background:var(--accent); color:var(--accent-ink); font-weight:700; }
+.btn.ghost { background:transparent; color:var(--accent); }
+.legend { display:flex; gap:12px; flex-wrap:wrap; font-size:.8rem; color:var(--muted); }
+.legend span::before { content:""; display:inline-block; width:10px; height:10px; border-radius:2px; margin-right:5px; vertical-align:-1px; }
+.legend .lv::before { background:var(--accent); } .legend .li::before { background:var(--img); } .legend .lm::before { background:var(--med); }
+table.rs { width:100%; border-collapse:collapse; font-size:.88rem; }
+table.rs th, table.rs td { text-align:left; padding:6px; border-bottom:1px solid var(--line); vertical-align:top; }
+table.rs th { font-size:.74rem; color:var(--muted); text-transform:uppercase; letter-spacing:.04em; }
+.foot { font-size:.82rem; color:var(--muted); display:flex; flex-direction:column; gap:4px; }
+.foot p { margin:0; }
+@media (max-width:560px) { ol.tl li { grid-template-columns:1fr; gap:2px; } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <header>
+    <a href="./">&larr; Clinic tools</a>
+    <h1>Follow-up planner</h1>
+    <p class="sub">Pick the disease and the pathway. Choose the result at each decision point. Enter a start date (procedure or visit) only if you want dates on the plan bullets. Source: Northwestern NIR follow-up protocols.</p>
+  </header>
+
+  <div class="bar">
+    <input type="search" id="q" placeholder="Search disease, procedure or device" aria-label="Search">
+    <label class="dt">Start date <input type="date" id="d0" aria-label="Start date (optional)"></label>
+  </div>
+  <div class="note2"><b>All procedures:</b> clinic about 2 weeks after any procedure. <b>Brilinta (Plavix non-responder, PRU &gt; 150):</b> aspirin 81 only, also in the flow diverter and ICAD aspirin 325 periods. <b>Symptom-driven</b> = no routine follow-up; return if symptoms recur or change.</div>
+
+  <main id="view" aria-live="polite"></main>
+
+  <footer class="foot">
+    <p>Built from claude/follow-up-protocols.md (2026-10-24: coils long-term imaging, MRA every 3–5 yr after 5 yr; flow diverter aspirin 325 to 12 mo, ICAD aspirin 325 lifelong, FMD every 2 yr, dissection plan). If the protocol changes, update the DATA block in this file. Not a substitute for clinical judgment.</p>
+    <p>Data version 2026-10-24b.</p>
+  </footer>
+</div>
+
+<script>
+/* DATA
+   Disease: id, sec (protocol section), group, name, short, paths[], notes[] (always shown), call (also-call line)
+   Path: id, name, steps[]
+   Step: at ("2w","3m","1y","10d"; "" = no fixed time), k ("visit"|"img"|"med"|"note"), t (text), b (branch: {q, o:[{l, s:[steps]}]})
+   Plan bullets use t; steps with k:"note" are shown but not copied. */
+var D = [
+/* ---------- 1. ANEURYSMS ---------- */
+{ id:"aneu", sec:1, group:"Neurovascular", name:"Intracranial aneurysm", short:"Untreated, coils, stent-assisted coils, flow diverter, WEB, clipped",
+  notes:["Ruptured, any treatment: imaging at 3 mo matched to the treatment (TOF MRA after coils; cMRA if a stent), then that treatment's schedule; clinic covers recovery, return to work and driving.",
+         "Coils (± balloon or stent): long-term imaging, no routine stop at 5 yr; after 5 yr, MRA every 3–5 yr. Flow diverter or WEB occluded and stable at 5 yr, low risk: may stop; continue every 5 yr if residual neck, multiple aneurysms, prior SAH, family history, smoker or age < 60. Clipped: per the clipped pathway."],
+  call:"Bleeding or bruising on aspirin/Plavix; before stopping aspirin or Plavix.",
+  paths:[
+  { id:"untr", name:"Untreated, unruptured (incl. carotid cave)", steps:[
+    {at:"6m",k:"img",t:"TOF MRA head"},{at:"1y",k:"img",t:"TOF MRA head + clinic"},{at:"2y",k:"img",t:"TOF MRA head + clinic"},
+    {at:"",k:"note",t:"Then TOF MRA every 2–3 yr while treatable"},
+    {at:"",k:"note",t:"Branch",b:{q:"Risk or change",o:[
+      {l:"Stable, standard risk",s:[{at:"",k:"img",t:"TOF MRA every 2–3 yr while treatable"}]},
+      {l:"Higher risk (high PHASES/ELAPSS, irregular, smoker)",s:[{at:"",k:"img",t:"TOF MRA yearly"}]},
+      {l:"Growth",s:[{at:"",k:"visit",t:"Discuss treatment"}]}]}}]},
+  { id:"cav", name:"Untreated, cavernous carotid (extradural)", steps:[
+    {at:"1y",k:"img",t:"TOF MRA head"},{at:"",k:"img",t:"Then TOF MRA every 3–5 yr"}]},
+  { id:"inf", name:"Infundibulum vs aneurysm", steps:[
+    {at:"1y",k:"img",t:"High-resolution TOF MRA head"},
+    {at:"",k:"note",t:"Branch",b:{q:"1-year MRA",o:[
+      {l:"Infundibulum confirmed",s:[{at:"",k:"note",t:"Stop follow-up"}]},
+      {l:"Still suspicious",s:[{at:"",k:"img",t:"Follow as untreated unruptured aneurysm (TOF MRA 6 mo, 1 yr, 2 yr, then every 2–3 yr)"}]}]}}]},
+  { id:"coil", name:"Coils ± balloon", steps:[
+    {at:"",k:"med",t:"Plavix stopped after the procedure; aspirin 81 x 2 wk"},
+    {at:"2w",k:"visit",t:"Clinic (review aspirin; stop at 2 wk)"},
+    {at:"",k:"note",t:"Branch",b:{q:"Ruptured?",o:[{l:"Ruptured",s:[{at:"3m",k:"img",t:"TOF MRA head + clinic (recovery, work, driving)"}]},{l:"Unruptured",s:[]}]}},
+    {at:"6m",k:"img",t:"TOF MRA head"},{at:"1y",k:"img",t:"TOF MRA head + clinic"},{at:"2y",k:"img",t:"TOF MRA head + clinic"},{at:"5y",k:"img",t:"TOF MRA head + clinic"},
+    {at:"",k:"img",t:"After 5 yr: TOF MRA every 3–5 yr (no routine stop)"},{at:"",k:"note",t:"Recanalization → DSA"}]},
+  { id:"sac", name:"Stent-assisted coils", steps:[
+    {at:"",k:"med",t:"Aspirin 325 + Plavix 75 (DAPT) x 6 mo"},
+    {at:"2w",k:"visit",t:"Clinic"},
+    {at:"6m",k:"img",t:"cMRA head + televisit"},
+    {at:"6m",k:"med",t:"Stop Plavix if stable; aspirin 81 for life"},
+    {at:"1y",k:"img",t:"cMRA head + clinic"},{at:"2y",k:"img",t:"cMRA head + clinic"},{at:"5y",k:"img",t:"cMRA head + clinic"},
+    {at:"",k:"img",t:"After 5 yr: cMRA every 3–5 yr (no routine stop)"},{at:"",k:"note",t:"Unclear or abnormal cMRA → DSA"}]},
+  { id:"fd", name:"Flow diverter", steps:[
+    {at:"",k:"med",t:"Aspirin 325 + Plavix 75 (DAPT) x 6 mo"},
+    {at:"2w",k:"visit",t:"Clinic"},
+    {at:"3m",k:"img",t:"MRI brain + cMRA head (CTA only if no MRI and no coils)"},
+    {at:"6m",k:"img",t:"DSA"},
+    {at:"6m",k:"med",t:"No in-stent stenosis → stop Plavix; aspirin 325 alone to 12 mo"},
+    {at:"",k:"note",t:"Branch",b:{q:"6-month DSA",o:[
+      {l:"Occluded",s:[{at:"12m",k:"img",t:"cMRA/CTA head + clinic"},{at:"12m",k:"med",t:"Aspirin 325 → aspirin 81 for life"},{at:"2y",k:"img",t:"cMRA/CTA head + clinic"},{at:"5y",k:"img",t:"cMRA/CTA head + clinic"},{at:"",k:"note",t:"Occluded and stable at 5 yr, low risk: may stop; otherwise every 5 yr"}]},
+      {l:"Not occluded",s:[{at:"12m",k:"img",t:"DSA"},{at:"12m",k:"med",t:"Aspirin 325 → aspirin 81 for life"},
+        {at:"",k:"note",t:"Branch",b:{q:"12-month DSA",o:[
+          {l:"Occluded",s:[{at:"2y",k:"img",t:"cMRA/CTA head + clinic"},{at:"5y",k:"img",t:"cMRA/CTA head + clinic"}]},
+          {l:"Smaller",s:[{at:"24m",k:"img",t:"DSA"}]},
+          {l:"Unchanged or larger",s:[{at:"",k:"visit",t:"Discuss retreatment"}]}]}}]}]}}]},
+  { id:"web", name:"WEB", steps:[
+    {at:"",k:"med",t:"Aspirin 81 x 2 wk (1–3 mo if device protrusion or intraprocedural thrombus)"},
+    {at:"2w",k:"visit",t:"Clinic (review aspirin)"},
+    {at:"6m",k:"img",t:"cMRA head"},{at:"12m",k:"img",t:"DSA"},{at:"2y",k:"img",t:"cMRA head + clinic"},{at:"5y",k:"img",t:"cMRA head + clinic"},
+    {at:"",k:"note",t:"Growing neck → discuss retreatment. Occluded and stable at 5 yr, low risk: may stop; otherwise cMRA every 5 yr"}]},
+  { id:"clip", name:"Clipped", steps:[
+    {at:"",k:"img",t:"Post-op DSA/CTA (per neurosurgery)"},
+    {at:"1y",k:"img",t:"CTA head + clinic"},
+    {at:"",k:"note",t:"Branch",b:{q:"1-year CTA",o:[
+      {l:"Complete",s:[{at:"5y",k:"img",t:"CTA head + clinic; then stop if low risk"}]},
+      {l:"Residual neck",s:[{at:"2y",k:"img",t:"CTA head + clinic"},{at:"",k:"img",t:"Then CTA every 5 yr"}]}]}}]}
+]},
+/* ---------- 2. BRAIN AVM ---------- */
+{ id:"bavm", sec:2, group:"Neurovascular", name:"Brain AVM", short:"Untreated, surgery, embolization, radiosurgery, children",
+  notes:["AVM MRI = MRI brain with and without contrast + 4D MRA (cMRA if no 4D).",
+         "Blood thinners: untreated unruptured → do not withhold; after rupture → hold until secured; cured → no restriction."],
+  paths:[
+  { id:"untr", name:"Untreated", steps:[
+    {at:"1y",k:"img",t:"AVM MRI + clinic"},
+    {at:"",k:"note",t:"Branch",b:{q:"Treatment candidate?",o:[
+      {l:"Yes",s:[{at:"",k:"img",t:"AVM MRI + clinic every 3 yr"}]},{l:"No",s:[{at:"",k:"note",t:"Symptom-driven"}]}]}},
+    {at:"",k:"note",t:"DSA only for new symptoms, growth or new high-risk feature, or treatment reconsidered"}]},
+  { id:"surg", name:"Surgery", steps:[
+    {at:"",k:"img",t:"Post-op DSA (per neurosurgery)"},
+    {at:"",k:"note",t:"Branch",b:{q:"Post-op DSA",o:[{l:"Negative",s:[{at:"",k:"note",t:"Cured (adults)"}]},{l:"Residual",s:[{at:"",k:"visit",t:"Discuss retreatment"}]}]}}]},
+  { id:"emb", name:"Curative embolization", steps:[
+    {at:"",k:"img",t:"DSA at the end of the procedure"},{at:"2w",k:"visit",t:"Clinic"},{at:"6m",k:"img",t:"DSA"},{at:"",k:"note",t:"Negative → discharge (adults)"}]},
+  { id:"stg", name:"Staged / pre-surgery / pre-radiosurgery embolization", steps:[
+    {at:"2w",k:"visit",t:"Clinic after each stage"},{at:"",k:"img",t:"DSA before each stage, then follow the surgery or radiosurgery pathway"}]},
+  { id:"srs", name:"Radiosurgery", steps:[
+    {at:"6m",k:"img",t:"AVM MRI + clinic"},{at:"1y",k:"img",t:"AVM MRI + clinic"},{at:"2y",k:"img",t:"AVM MRI + clinic"},{at:"3y",k:"img",t:"DSA (earlier if MRI suggests closure)"},
+    {at:"",k:"note",t:"Open at 3–4 yr → discuss retreatment. Symptomatic swelling → steroids"}]},
+  { id:"kids", name:"Children (treated < 18), after cure", steps:[
+    {at:"1y",k:"img",t:"DSA"},{at:"",k:"img",t:"Then DSA every 5 yr until age 21"},{at:"",k:"note",t:"Counsel no smoking"}]}
+]},
+/* ---------- 3. dAVF ---------- */
+{ id:"davf", sec:3, group:"Neurovascular", name:"Dural AV fistula", short:"Low grade observed, treated (cured or residual)",
+  call:"Tinnitus worsens, changes or suddenly stops; cavernous fistula — red or swollen eye, double vision.",
+  paths:[
+  { id:"low", name:"Low grade (no cortical venous drainage), observed", steps:[
+    {at:"1y",k:"img",t:"cMRA or 4D MRA + clinic"},{at:"",k:"note",t:"Then symptom-driven; DSA only if symptoms change or MRA abnormal"},
+    {at:"",k:"note",t:"Branch",b:{q:"Anatomy",o:[{l:"Standard",s:[]},{l:"High-risk anatomy or unreliable symptom reporting",s:[{at:"",k:"img",t:"MRA every 2–3 yr"}]}]}}]},
+  { id:"tx", name:"Treated (embolization or surgery)", steps:[
+    {at:"2w",k:"visit",t:"Clinic"},
+    {at:"",k:"note",t:"Branch",b:{q:"Result",o:[
+      {l:"Cured",s:[{at:"6m",k:"img",t:"DSA (may skip if post-op DSA confirmed complete surgical disconnection)"},{at:"",k:"note",t:"Negative → discharge, then symptom-driven"}]},
+      {l:"Residual with cortical venous drainage",s:[{at:"",k:"visit",t:"Retreat within weeks"}]},
+      {l:"Residual without cortical venous drainage",s:[{at:"3m",k:"img",t:"DSA (3–6 mo)"},{at:"",k:"note",t:"Then follow as low grade"}]}]}}]},
+  { id:"high", name:"High grade (cortical venous drainage), untreated", steps:[{at:"",k:"visit",t:"Treat"}]}
+]},
+/* ---------- 4. CAVERNOMA ---------- */
+{ id:"ccm", sec:4, group:"Neurovascular", name:"Cavernous malformation", short:"Incidental, after a bleed",
+  notes:["MRI: T1, T2, SWI (GRE only if no SWI); same sequence each time; contrast at baseline only (DVA).",
+         "Bleed = new symptoms + recent blood; hemosiderin rim alone is NOT a bleed. Growth or new blood without symptoms: follow as a bleed.",
+         "Multiple lesions or family history: genetics (CCM1/2/3), spine MRI once, screening MRI (SWI) for first-degree relatives.",
+         "Blood thinners: no recent bleed → do not withhold; after a bleed → hold, restart after stable MRI as deep IPH (section 21)."],
+  call:"Double vision, balance problems.",
+  paths:[
+  { id:"inc", name:"Incidental (any location)", steps:[{at:"1y",k:"img",t:"MRI brain + clinic"},{at:"",k:"note",t:"Then symptom-driven (brainstem/deep: low threshold to scan)"}]},
+  { id:"bleed", name:"After a bleed", steps:[
+    {at:"3m",k:"img",t:"MRI brain + clinic"},{at:"15m",k:"img",t:"MRI brain + clinic"},{at:"27m",k:"img",t:"MRI brain + clinic"},
+    {at:"",k:"note",t:"Then symptom-driven. Brainstem bleed → neurosurgery"}]}
+]},
+/* ---------- 5. SDH ---------- */
+{ id:"sdh", sec:5, group:"Neurovascular", name:"Chronic subdural hematoma / MMA", short:"Observed, standalone MMA, after surgery",
+  notes:["Large = ≥15 mm thick or midline shift ≥5 mm. Stop when resolved (≤3 mm) or small stable residual without symptoms at 6 mo. Growing or new symptoms: CT now, discuss rescue surgery.",
+         "Atorvastatin 20 mg nightly x 8 wk: option for observed or non-surgical patients (ATOCH); no dexamethasone.",
+         "Blood thinners: hold all at discharge; restart at the 2-week CT visit per section 21."],
+  call:"Confusion, sleepiness, fall or head injury.",
+  paths:[
+  { id:"obs", name:"Observed", steps:[
+    {at:"2w",k:"img",t:"CT head + clinic (restart decision)"},
+    {at:"",k:"note",t:"Branch",b:{q:"Size",o:[{l:"Large",s:[{at:"1m",k:"img",t:"CT head"}]},{l:"Not large",s:[]}]}},
+    {at:"3m",k:"img",t:"CT head + clinic"},
+    {at:"",k:"note",t:"Branch",b:{q:"3-month CT",o:[{l:"Resolved",s:[{at:"",k:"note",t:"Stop"}]},{l:"Not resolved",s:[{at:"6m",k:"img",t:"CT head + clinic"}]}]}}]},
+  { id:"mma", name:"Standalone MMA embolization", steps:[
+    {at:"",k:"med",t:"Hold antiplatelets and anticoagulants at discharge"},
+    {at:"2w",k:"img",t:"CT head + clinic (restart decision)"},{at:"1m",k:"img",t:"CT head"},{at:"3m",k:"img",t:"CT head + clinic"},
+    {at:"",k:"note",t:"Branch",b:{q:"3-month CT",o:[{l:"Resolved",s:[{at:"",k:"note",t:"Stop"}]},{l:"Not resolved",s:[{at:"6m",k:"img",t:"CT head + clinic"}]}]}}]},
+  { id:"surg", name:"MMA embolization after surgery", steps:[
+    {at:"",k:"med",t:"Hold antiplatelets and anticoagulants at discharge"},
+    {at:"2w",k:"img",t:"CT head + clinic (restart decision)"},
+    {at:"",k:"note",t:"Branch",b:{q:"Size",o:[{l:"Large",s:[{at:"1m",k:"img",t:"CT head"}]},{l:"Not large",s:[]}]}},
+    {at:"3m",k:"img",t:"CT head + clinic"},
+    {at:"",k:"note",t:"Branch",b:{q:"3-month CT",o:[{l:"Resolved",s:[{at:"",k:"note",t:"Stop"}]},{l:"Not resolved",s:[{at:"6m",k:"img",t:"CT head + clinic"}]}]}}]}
+]},
+/* ---------- 6. STROKE ---------- */
+{ id:"stroke", sec:6, group:"Neurovascular", name:"Stroke — thrombectomy", short:"2 wk, 3 mo, 1 yr",
+  notes:["Secondary prevention: neurology. Stent placed: follow the carotid or intracranial stent pathway instead."],
+  paths:[{ id:"evt", name:"After thrombectomy", steps:[
+    {at:"2w",k:"visit",t:"Clinic or televisit"},{at:"3m",k:"visit",t:"Clinic or televisit: NIHSS, mRS (90-day outcome)"},{at:"1y",k:"visit",t:"mRS by phone or televisit (database)"}]}]},
+/* ---------- 7. CAROTID ---------- */
+{ id:"car", sec:7, group:"Neurovascular", name:"Carotid stenosis / carotid web", short:"Symptomatic, asymptomatic, after stent",
+  notes:["Symptomatic 50–99%: revascularize, ideally within 2 wk of the event.",
+         "Carotid web, stented: same as after carotid stent (conservative default)."],
+  paths:[
+  { id:"sym50", name:"Symptomatic < 50%", steps:[{at:"",k:"med",t:"Medical management with neurology"},{at:"1y",k:"img",t:"Carotid duplex"}]},
+  { id:"a50", name:"Asymptomatic < 50%", steps:[{at:"",k:"img",t:"Duplex once, then hand off to PCP or neurology"}]},
+  { id:"a5069", name:"Asymptomatic 50–69%", steps:[{at:"1y",k:"img",t:"Duplex + clinic, then yearly"},{at:"",k:"note",t:"Progression or new symptoms → discuss treatment"}]},
+  { id:"a7099", name:"Asymptomatic 70–99%, not treated", steps:[{at:"6m",k:"img",t:"Duplex + clinic, then every 6 mo"},{at:"",k:"note",t:"Progression or new symptoms → discuss treatment"}]},
+  { id:"stent", name:"After carotid stent (or web / neck dissection stent)", steps:[
+    {at:"",k:"med",t:"Aspirin 325 + Plavix 75 (DAPT) x 3 mo"},
+    {at:"2w",k:"visit",t:"Clinic"},
+    {at:"1m",k:"img",t:"Duplex + clinic (CTA or cMRA if high in the neck or vertebral)"},
+    {at:"3m",k:"med",t:"Stop Plavix; aspirin 81 for life"},
+    {at:"6m",k:"img",t:"Duplex + clinic"},{at:"12m",k:"img",t:"Duplex + clinic"},{at:"18m",k:"img",t:"Duplex"},{at:"24m",k:"img",t:"Duplex"},
+    {at:"",k:"img",t:"Then duplex yearly until stable, then every 2 yr for life"},
+    {at:"",k:"note",t:"High risk (diabetes, neck radiation, prior in-stent restenosis, heavy calcification): every 6 mo until stable. In-stent restenosis ≥70% or symptoms → CTA, discuss retreatment"}]}
+]},
+/* ---------- 8. ICAD ---------- */
+{ id:"icad", sec:8, group:"Neurovascular", name:"Intracranial stenosis (ICAD)", short:"Medical management, after stent",
+  notes:["Stent criteria: age 22–80, 70–99%, ≥2 strokes despite meds, mRS ≤3, >7 days from last stroke.",
+         "Statin (LDL < 70); SBP < 140 (< 130 if diabetic); lifestyle. Brilinta patients: aspirin 81."],
+  paths:[
+  { id:"sym", name:"Symptomatic, medical management", steps:[
+    {at:"",k:"med",t:"Aspirin 325 + Plavix 75 x 90 days"},{at:"90d",k:"med",t:"Stop Plavix; aspirin 325 for life"},
+    {at:"",k:"note",t:"New stroke on medical therapy → evaluate for stenting"}]},
+  { id:"asym", name:"Asymptomatic", steps:[{at:"",k:"med",t:"Aspirin 81; statin and risk-factor control (neurology leads)"}]},
+  { id:"stent", name:"After intracranial stent", steps:[
+    {at:"",k:"med",t:"Aspirin 325 + Plavix 75 (DAPT) x 3 mo"},
+    {at:"2w",k:"visit",t:"Clinic"},
+    {at:"3m",k:"img",t:"CTA head + visit (clinic or televisit)"},
+    {at:"",k:"note",t:"Branch",b:{q:"Stent placed for",o:[
+      {l:"Atherosclerosis (ICAD)",s:[{at:"3m",k:"med",t:"Stop Plavix; aspirin 325 for life"}]},
+      {l:"Intracranial dissection",s:[{at:"3m",k:"med",t:"Stop Plavix; aspirin 81 for life"}]}]}},
+    {at:"1y",k:"img",t:"CTA head + clinic"},
+    {at:"",k:"note",t:"Then symptom-driven. CTA on photon-counting CT when available; cMRA if contrast allergy, kidney disease or young. In-stent restenosis or symptoms → DSA"}]}
+]},
+/* ---------- 9. DISSECTION / FMD ---------- */
+{ id:"diss", sec:9, group:"Neurovascular", name:"Cervical artery dissection / FMD", short:"Medical management, incidental FMD",
+  notes:["Imaging: contrast MRA neck + fat-suppressed T1 (CTA only if no MRI); no routine duplex.",
+         "Blood thinner usually 6 mo with neurology. Favor anticoagulant (DOAC or warfarin INR 2–3) if thrombus, ≥70% stenosis, occlusion or early recurrence (individualize). Aspirin 81 if intracranial extension, large infarct or hemorrhagic transformation. Otherwise aspirin 81 (+ Plavix 21–90 days if minor stroke or TIA).",
+         "Long-term aspirin 81: persistent stenosis or pseudoaneurysm, recurrent dissection, connective tissue disorder. Stent: enlarging or symptomatic pseudoaneurysm, or ischemia despite medical therapy.",
+         "Counsel: avoid neck manipulation (chiropractic) and heavy straining."],
+  call:"New neck pain or headache, droopy eyelid or small pupil, new pulsatile tinnitus.",
+  paths:[
+  { id:"med", name:"Dissection, medical management", steps:[
+    {at:"3m",k:"img",t:"Contrast MRA neck + clinic"},
+    {at:"",k:"note",t:"Branch",b:{q:"3-month MRA",o:[
+      {l:"Healed",s:[{at:"6m",k:"med",t:"Aspirin 81 to complete 6 mo total, then stop (unless other indication); discharge"}]},
+      {l:"Not healed or pseudoaneurysm",s:[{at:"6m",k:"med",t:"Switch to aspirin 81 (nurse call or MyChart; no visit or imaging)"},{at:"12m",k:"img",t:"Contrast MRA neck + clinic"},
+        {at:"",k:"note",t:"Branch",b:{q:"12-month MRA",o:[{l:"Healed",s:[{at:"12m",k:"med",t:"Stop aspirin"}]},{l:"Still abnormal",s:[{at:"12m",k:"med",t:"Aspirin 81 long-term; stop imaging if stable"}]}]}}]}]}}]},
+  { id:"fmd", name:"Incidental cervical FMD", steps:[
+    {at:"",k:"img",t:"Once, if not done: CTA or cMRA head to pelvis"},
+    {at:"",k:"med",t:"Aspirin 81 unless contraindicated"},
+    {at:"",k:"note",t:"Blood pressure: PCP; renal FMD or hard-to-control BP → nephrology or hypertension clinic"},
+    {at:"2y",k:"img",t:"CTA or cMRA neck + clinic"},{at:"4y",k:"img",t:"CTA or cMRA neck + clinic"},
+    {at:"",k:"note",t:"Then every 2 yr; extend to 5 yr after repeated stability. New neck pain, headache, Horner or neurologic symptoms → imaging now"}]}
+]},
+/* ---------- 10. MOYAMOYA ---------- */
+{ id:"moya", sec:10, group:"Neurovascular", name:"Moyamoya", short:"Medical management, after bypass",
+  notes:["Perfusion = MR perfusion with acetazolamide challenge. Baseline: MRI + TOF MRA, DSA, perfusion.",
+         "Aspirin 81 (ischemic type only). Avoid aggressive BP lowering, dehydration, hyperventilation; tell anesthesia. Avoid decongestants, triptans, ergots; prefer progestogen-only contraception.",
+         "Atherosclerotic moyamoya-like pattern: manage per ICAD (statin, antiplatelet); avoid hypotension."],
+  call:"Brief weakness, numbness or speech problems.",
+  paths:[
+  { id:"med", name:"Medical management", steps:[
+    {at:"3m",k:"visit",t:"Clinic (new symptoms that need expedited imaging?)"},{at:"1y",k:"img",t:"MRI brain + TOF MRA + clinic"},{at:"3y",k:"img",t:"MRI brain + TOF MRA + clinic"},
+    {at:"",k:"note",t:"Then every 2 yr. New symptoms, silent infarct or progression → repeat perfusion → neurosurgery for bypass"}]},
+  { id:"byp", name:"After bypass, establishing care", steps:[
+    {at:"",k:"img",t:"Outside records; MRI + TOF MRA + perfusion at first visit; DSA only if none since surgery or new symptoms"},
+    {at:"2y",k:"img",t:"MRI brain + TOF MRA + clinic, then every 2 yr; perfusion only for new symptoms"},
+    {at:"",k:"med",t:"Aspirin 81 long-term (ischemic type) unless the surgeon directed otherwise"}]}
+]},
+/* ---------- 11. VASCULITIS / RCVS / CAA ---------- */
+{ id:"vasc", sec:11, group:"Neurovascular", name:"Vasculitis / RCVS / amyloid angiopathy", short:"After angiogram",
+  call:"Headaches returning, transient tingling or weakness. 911: thunderclap headache.",
+  paths:[
+  { id:"rcvs", name:"RCVS", steps:[{at:"2w",k:"visit",t:"Results visit"},{at:"12w",k:"img",t:"CTA or contrast MRA head (confirm reversal)"},{at:"",k:"note",t:"Not reversed → reconsider vasculitis, atherosclerosis or moyamoya"}]},
+  { id:"cnsv", name:"CNS vasculitis", steps:[{at:"2w",k:"visit",t:"Results visit"},{at:"",k:"note",t:"Imaging per neurology/rheumatology"}]},
+  { id:"caa", name:"Cerebral amyloid angiopathy", steps:[{at:"2w",k:"visit",t:"Results visit"},{at:"",k:"note",t:"No routine angiographic follow-up; neurology follows"}]}
+]},
+/* ---------- 12. VSS ---------- */
+{ id:"vss", sec:12, group:"Venous, CSF and epistaxis", name:"Venous sinus stent (PT / IIH)", short:"Also PT diverticulum or dehiscence stent-assisted coiling",
+  notes:["IIH: continue neuro-ophthalmology follow-up (directs Diamox taper)."],
+  paths:[{ id:"stent", name:"After venous sinus stent", steps:[
+    {at:"",k:"med",t:"Aspirin 325 + Plavix 75 x 3 mo"},
+    {at:"2w",k:"visit",t:"Clinic"},
+    {at:"3m",k:"visit",t:"Televisit"},{at:"3m",k:"med",t:"Stop Plavix; continue aspirin 325 to 6 mo"},
+    {at:"6m",k:"img",t:"CT venogram or contrast MR venogram + clinic"},
+    {at:"6m",k:"med",t:"Option to stop aspirin (aspirin 81 if taken for another reason)"},
+    {at:"",k:"note",t:"Then symptom-driven"}]}]},
+/* ---------- 13. CSF LEAK ---------- */
+{ id:"csf", sec:13, group:"Venous, CSF and epistaxis", name:"CSF leak / SIH", short:"Patch, CVF embolization, rebound",
+  notes:["Rebound intracranial hypertension: Diamox 250 mg BID → 500 mg BID if not controlled at 1 wk → once settled, 250 mg daily x 1 wk, then stop. Check sulfa allergy, kidney stones, pregnancy; not tolerated → topiramate. > 4–6 wk or vision change → neuro-ophthalmology."],
+  call:"Headache returns (upright or lying down), fever, wound problems.",
+  paths:[
+  { id:"plp", name:"Patch, post-LP leak", steps:[{at:"2w",k:"visit",t:"Clinic"},{at:"",k:"note",t:"Then symptom-driven"}]},
+  { id:"psp", name:"Patch, spontaneous leak", steps:[{at:"2w",k:"visit",t:"Clinic"},{at:"3m",k:"img",t:"MRI brain + clinic"},
+    {at:"",k:"note",t:"Branch",b:{q:"3-month MRI",o:[{l:"Normal",s:[]},{l:"Not normal",s:[{at:"6m",k:"img",t:"MRI brain + clinic"}]}]}},
+    {at:"",k:"note",t:"Failed first patch → dynamic CT myelogram"}]},
+  { id:"cvf", name:"CSF-venous fistula embolization", steps:[{at:"2w",k:"visit",t:"Clinic"},{at:"3m",k:"img",t:"MRI brain + clinic"},
+    {at:"",k:"note",t:"Branch",b:{q:"3-month MRI",o:[{l:"Normal",s:[]},{l:"Not normal",s:[{at:"6m",k:"img",t:"MRI brain + clinic"}]}]}}]}
+]},
+/* ---------- 15. EPISTAXIS ---------- */
+{ id:"epi", sec:15, group:"Venous, CSF and epistaxis", name:"Epistaxis embolization", short:"2 wk, ENT",
+  notes:["Rebleeding: ENT or ER. HHT suspected: genetics referral; screen for lung and brain AVMs."],
+  call:"Facial or palate pain, skin darkening on face or nose, vision change.",
+  paths:[{ id:"emb", name:"After embolization", steps:[{at:"2w",k:"visit",t:"Televisit OK"},{at:"",k:"note",t:"Then ENT follow-up"}]}]},
+/* ---------- 14. HEAD AND NECK ---------- */
+{ id:"hn", sec:14, group:"Head and neck and spinal vascular", name:"Head and neck vascular malformations", short:"Sclerotherapy, H&N AVM",
+  notes:["Bleomycin max 15 units per session (children 0.5–1 unit/kg, max 15); track cumulative dose across all sessions.",
+         "Extensive VM before treatment: D-dimer, fibrinogen, platelets. D-dimer > 1.0 (FEU): enoxaparin 40 mg daily from 3–5 days before to 20 days after. Fibrinogen < 150, platelets < 100,000 or D-dimer > 1.8: same enoxaparin dose and hematology referral before treatment.",
+         "Ethanol max 0.5–1 mL/kg per session (conservative 0.2 mL/kg; max 50 mL); doxycycline 20 mg/mL, max 1,000 mg or 50 mL. Complex lesions → sirolimus with hematology."],
+  call:"Trouble breathing or swallowing (911); worsening swelling or pain; skin darkening or blistering; dark urine; fever.",
+  paths:[
+  { id:"scl", name:"Low-flow, sclerotherapy", steps:[
+    {at:"6w",k:"visit",t:"Clinic exam (6–12 wk); next session if goals not met"},
+    {at:"",k:"note",t:"MRI between sessions only if deep lesion or unclear response"},
+    {at:"",k:"note",t:"Branch",b:{q:"Session",o:[{l:"More sessions needed",s:[{at:"",k:"visit",t:"Repeat every 6–12 wk until goals met"}]},
+      {l:"Final session",s:[{at:"3m",k:"img",t:"MRI with and without contrast + clinic (3–6 mo)"},{at:"",k:"note",t:"Then symptom-driven"}]}]}}]},
+  { id:"lfobs", name:"Low-flow, observed", steps:[{at:"",k:"note",t:"Symptom-driven; MRI for change or before treatment"}]},
+  { id:"avm", name:"H&N AVM, embolization ± surgery", steps:[
+    {at:"2w",k:"visit",t:"Clinic after every procedure (each session and after surgery)"},
+    {at:"",k:"note",t:"Branch",b:{q:"Plan",o:[
+      {l:"More staged sessions",s:[{at:"6w",k:"visit",t:"Next session (6–12 wk; 8–12 wk after ethanol)"}]},
+      {l:"Surgical resection next",s:[{at:"",k:"visit",t:"Surgery usually a few days after the last embolization (usually 24–72 hr), unless the surgeon specifies otherwise"}]},
+      {l:"Treatment complete",s:[{at:"6m",k:"img",t:"MRI with and without contrast + 4D MRA + clinic (baseline)"},{at:"1y",k:"img",t:"Clinic + color Doppler ultrasound"},{at:"2y",k:"img",t:"Clinic + color Doppler ultrasound"},{at:"3y",k:"img",t:"Clinic + color Doppler ultrasound"},{at:"4y",k:"img",t:"Clinic + color Doppler ultrasound"},{at:"5y",k:"img",t:"Clinic + color Doppler ultrasound"},{at:"",k:"note",t:"Then every 2–5 yr. MRI + 4D MRA if exam or ultrasound changes; DSA only before retreatment or surgery. Watch puberty, pregnancy, trauma"}]}]}}]},
+  { id:"avmobs", name:"H&N AVM, observed (declined treatment)", steps:[{at:"",k:"note",t:"No routine follow-up; return if larger, warmer or more pulsatile, color change, new pain, bleeding or skin breakdown, pregnancy, or wants to reconsider"}]}
+]},
+/* ---------- 16. SPINAL VM ---------- */
+{ id:"svm", sec:16, group:"Head and neck and spinal vascular", name:"Spinal vascular malformations", short:"Spinal dural fistula, spinal cord AVM",
+  call:"Walking worse again, new numbness, new bladder or bowel trouble. 911: sudden leg weakness, sudden loss of bladder or bowel control.",
+  paths:[
+  { id:"sdavf", name:"Spinal dural fistula, treated", steps:[
+    {at:"",k:"med",t:"Heparin overnight, then enoxaparin 40 mg SC daily x 2 doses at home (~72 hr total); no oral blood thinner after"},
+    {at:"2w",k:"visit",t:"Clinic"},
+    {at:"3m",k:"img",t:"MRI spine + first-pass contrast MRA + clinic"},
+    {at:"6m",k:"img",t:"DSA (after embolization)"},
+    {at:"12m",k:"img",t:"MRI spine + first-pass contrast MRA + clinic"},
+    {at:"",k:"note",t:"DSA sooner if symptoms worsen or MRA abnormal"}]},
+  { id:"cobs", name:"Spinal cord AVM, observed", steps:[
+    {at:"2w",k:"visit",t:"Clinic (after angiogram)"},{at:"6m",k:"img",t:"MRI spine + clinic"},{at:"1y",k:"img",t:"MRI spine + clinic"},{at:"3y",k:"img",t:"MRI spine + clinic"},
+    {at:"",k:"note",t:"Then every 2 yr; DSA if symptoms or MRI change"}]},
+  { id:"ctx", name:"Spinal cord AVM, treated", steps:[{at:"2w",k:"visit",t:"Clinic"},{at:"",k:"img",t:"DSA after each stage, then follow as observed"}]}
+]},
+/* ---------- 17-19. SPINE ---------- */
+{ id:"va", sec:17, group:"Spine", name:"Vertebral augmentation", short:"Vertebroplasty or kyphoplasty",
+  notes:["New or worse back pain: MRI spine (adjacent-level fractures occur early, median ~2 months).","Bone health: remind PCP (DEXA, vitamin D, treatment); note in letter to PCP."],
+  paths:[{ id:"va", name:"After augmentation", steps:[{at:"2w",k:"visit",t:"Televisit OK (no routine visits after)"},{at:"",k:"note",t:"No routine imaging"}]}]},
+{ id:"bvn", sec:18, group:"Spine", name:"Basivertebral nerve ablation", short:"NRS + ODI",
+  paths:[{ id:"bvn", name:"After BVN ablation", steps:[
+    {at:"2w",k:"visit",t:"Televisit OK"},{at:"3m",k:"visit",t:"NRS + ODI (televisit OK)"},
+    {at:"",k:"note",t:"Branch",b:{q:"At 3 months",o:[{l:"Still in pain, or feasible",s:[{at:"6m",k:"visit",t:"NRS + ODI"},{at:"12m",k:"visit",t:"NRS + ODI"}]},{l:"Resolved",s:[]}]}},
+    {at:"",k:"note",t:"No routine imaging"}]}]},
+{ id:"mild", sec:19, group:"Spine", name:"MILD (lumbar spinal stenosis)", short:"Not yet offered at NMH",
+  notes:["Before: MRI within 1 yr; standing flexion-extension X-rays; baseline leg and back NRS, walking distance, standing time; pedal pulses; insurance check."],
+  call:"Clear fluid from the incision or positional headache. 911: new leg weakness, bladder or bowel change.",
+  paths:[{ id:"mild", name:"After MILD", steps:[
+    {at:"2w",k:"visit",t:"Clinic or video (wound, early response, red flags); PT may restart"},
+    {at:"3m",k:"visit",t:"Leg and back NRS, walking distance, standing time (televisit OK)"},
+    {at:"1y",k:"visit",t:"Leg and back NRS, walking distance, standing time"},
+    {at:"",k:"note",t:"No routine imaging. Recurrent or worse symptoms: MRI + spine surgery opinion"}]}]}
+];
+
+/* Section 21: restart after intracranial hemorrhage (antiplatelet, anticoagulant high / lower clot risk, mechanical valve) */
+var RESTART = [
+  { id:"sdh", l:"Chronic SDH, treated", ap:"2w", ach:"2w", acl:"4w", valve:"1w" },
+  { id:"deep", l:"IPH, deep", ap:"2w", apx:"2–4 wk", ach:"2w", acl:"4w", valve:"2w" },
+  { id:"lobar", l:"IPH, lobar or amyloid", ap:"2w", apx:"2–4 wk", ach:"7w", achx:"7–8 wk, or LAA closure", acl:"7w", aclx:"7–8 wk, or LAA closure", valve:"2w" },
+  { id:"sah", l:"Aneurysmal SAH, secured", ap:"", apx:"Days", ach:"1w", achx:"1–2 wk", acl:"1w", aclx:"1–2 wk", valve:"", valvex:"24–72 hr" }
+];
+
+/* ---------------- UI ---------------- */
+var view = document.getElementById("view"), q = document.getElementById("q"), d0 = document.getElementById("d0");
+var pick = {}; // branch choices: key -> option index
+function esc(s) { return String(s).replace(/[&<>"]/g, function (c) { return { "&":"&amp;", "<":"&lt;", ">":"&gt;", '"':"&quot;" }[c]; }); }
+function byId(id) { for (var i = 0; i < D.length; i++) if (D[i].id === id) return D[i]; return null; }
+function state() { var h = location.hash.replace(/^#/, "").split("/"); return { d: h[0] || "", p: h[1] || "" }; }
+function go(d, p) { location.hash = d ? (p ? d + "/" + p : d) : ""; }
+
+function parseAt(at) { var m = /^(\d+)([dwmy])$/.exec(at || ""); return m ? { n: +m[1], u: m[2] } : null; }
+function words(at) { var a = parseAt(at); if (!a) return ""; var U = { d:"day", w:"week", m:"month", y:"year" }[a.u]; return a.n + " " + U + (a.n > 1 ? "s" : ""); }
+function addTo(base, at) {
+  var a = parseAt(at); if (!a || !base) return null;
+  var d = new Date(base.getTime());
+  if (a.u === "d") d.setDate(d.getDate() + a.n);
+  else if (a.u === "w") d.setDate(d.getDate() + 7 * a.n);
+  else { var mo = a.u === "m" ? a.n : 12 * a.n, day = d.getDate(); d.setDate(1); d.setMonth(d.getMonth() + mo); var last = new Date(d.getFullYear(), d.getMonth() + 1, 0).getDate(); d.setDate(Math.min(day, last)); }
+  return d;
+}
+function fmt(d) { return (d.getMonth() + 1) + "/" + d.getDate() + "/" + d.getFullYear(); }
+function base() { if (!d0.value) return null; var p = d0.value.split("-"); return new Date(+p[0], +p[1] - 1, +p[2]); }
+function days(at) { var a = parseAt(at); if (!a) return 1e9; return a.n * { d:1, w:7, m:30.4, y:365 }[a.u]; }
+
+/* Flatten steps following chosen branches. Returns {items:[step], branches:[{key,q,o,sel}]} in display order. */
+function walk(steps, key, out) {
+  steps.forEach(function (s, i) {
+    var k = key + "." + i;
+    if (s.b) {
+      var sel = pick[k] == null ? -1 : pick[k];
+      out.push({ br: true, key: k, q: s.b.q, o: s.b.o, sel: sel });
+      if (sel >= 0) walk(s.b.o[sel].s, k + "o" + sel, out);
+    } else out.push(s);
+  });
+  return out;
+}
+
+function home() {
+  var term = q.value.trim().toLowerCase(), html = "", last = "";
+  D.forEach(function (d) {
+    var hay = (d.name + " " + d.short + " " + d.paths.map(function (p) { return p.name; }).join(" ")).toLowerCase();
+    if (term && hay.indexOf(term) < 0) return;
+    if (d.group !== last) { if (last) html += "</div>"; html += '<div class="grp">' + esc(d.group) + '</div><div class="list">'; last = d.group; }
+    html += '<button class="item" data-d="' + d.id + '"><b>' + esc(d.name) + '</b><small>Section ' + d.sec + ' · ' + esc(d.short) + '</small></button>';
+  });
+  if (!term || "blood thinner restart hemorrhage bleed anticoagulant".indexOf(term) >= 0 || term.indexOf("restart") >= 0) {
+    html += (last ? "</div>" : "") + '<div class="grp">Blood thinners</div><div class="list"><button class="item" data-d="restart"><b>Restart after intracranial hemorrhage</b><small>Section 21 · antiplatelet, anticoagulant, valve</small></button><button class="item" data-d="pain"><b>Headache and pain after procedures</b><small>Section 20 · quick reference</small></button>';
+    last = "x";
+  }
+  view.innerHTML = last ? html + "</div>" : '<p class="sub">No match.</p>';
+}
+
+function pathView(d, pid) {
+  var p = null; d.paths.forEach(function (x) { if (x.id === pid) p = x; }); if (!p) p = d.paths[0];
+  var b0 = base(), key = d.id + "/" + p.id;
+  var h = '<div class="crumbs"><button data-home>All diseases</button><span>/</span><span>' + esc(d.name) + '</span></div>';
+  h += '<h2>' + esc(d.name) + ' <span class="sub" style="font-size:.85rem;font-weight:400">· protocol section ' + d.sec + '</span></h2>';
+  if (d.paths.length > 1) { h += '<div class="tabs" role="tablist">'; d.paths.forEach(function (x) { h += '<button class="tab" role="tab" aria-selected="' + (x === p) + '" data-p="' + x.id + '">' + esc(x.name) + '</button>'; }); h += '</div>'; }
+  var items = walk(p.steps, key, []);
+  h += '<section class="card"><div class="kind">' + esc(p.name) + '</div><div class="legend"><span class="lv">Visit</span><span class="li">Imaging</span><span class="lm">Medicine</span></div><ol class="tl">';
+  var plan = [];
+  items.forEach(function (s) {
+    if (s.br) {
+      h += '<li style="display:block;border:0;padding:0"><div class="br"><div class="q">' + esc(s.q) + '?</div><div class="tabs">' + s.o.map(function (o, j) { return '<button class="chip" aria-pressed="' + (s.sel === j) + '" data-k="' + s.key + '" data-j="' + j + '">' + esc(o.l) + '</button>'; }).join("") + '</div>' + (s.sel < 0 ? '<div class="sub" style="font-size:.85rem">Choose to see the next steps.</div>' : '') + '</div></li>';
+      return;
+    }
+    var dt = s.at ? addTo(b0, s.at) : null;
+    var when = s.at ? (dt ? fmt(dt) + '<small>' + esc(words(s.at)) + '</small>' : esc(words(s.at))) : '<small>' + (s.k === "note" ? "" : "now / ongoing") + '</small>';
+    h += '<li class="' + s.k + '"><div class="when">' + when + '</div><div>' + esc(s.t) + '</div></li>';
+    if (s.k !== "note") plan.push({ at: s.at, t: s.t, dt: dt });
+  });
+  h += '</ol></section>';
+  /* Plan bullets in the physician's style: * Text (date) or * Text in N months */
+  var dated = plan.filter(function (x) { return x.at; }).sort(function (a, b) { return days(a.at) - days(b.at); });
+  var undated = plan.filter(function (x) { return !x.at; });
+  var lines = undated.concat(dated).map(function (x) { return "* " + x.t + (x.at ? (x.dt ? " (" + fmt(x.dt) + ")" : " in " + words(x.at)) : ""); });
+  h += '<section class="card"><div class="kind">Plan bullets</div><textarea id="out" aria-label="Plan bullets">' + esc(lines.join("\n")) + '</textarea><div class="bar"><button class="btn" id="copy">Copy</button><button class="btn ghost" id="reset">Reset choices</button><span class="sub" id="msg" style="font-size:.85rem"></span></div></section>';
+  if ((d.notes && d.notes.length) || d.call) {
+    h += '<section class="card"><div class="kind">Remember</div><div class="note2"><ul>' + (d.notes || []).map(function (n) { return '<li>' + esc(n) + '</li>'; }).join("") + (d.call ? '<li><b>Also call:</b> ' + esc(d.call) + '</li>' : '') + '</ul></div></section>';
+  }
+  view.innerHTML = h;
+}
+
+function restartView() {
+  var b0 = base();
+  var h = '<div class="crumbs"><button data-home>All diseases</button><span>/</span><span>Restart after intracranial hemorrhage</span></div><h2>Blood thinners: restart after intracranial hemorrhage <span class="sub" style="font-size:.85rem;font-weight:400">· section 21</span></h2>';
+  h += '<p class="sub">Start date = bleed onset or treatment date. Always after a stable CT. Dates are the earliest default; adjust for the patient.</p>';
+  h += '<section class="card"><table class="rs"><thead><tr><th>Bleed</th><th>Antiplatelet</th><th>Anticoagulant, high clot risk</th><th>Anticoagulant, lower clot risk</th><th>Mechanical valve*</th></tr></thead><tbody>';
+  function cell(at, x) { var dt = at ? addTo(b0, at) : null; return '<td>' + esc(x || words(at)) + (dt ? '<br><b>' + fmt(dt) + '</b>' : '') + '</td>'; }
+  RESTART.forEach(function (r) { h += '<tr><td><b>' + esc(r.l) + '</b></td>' + cell(r.ap, r.apx) + cell(r.ach, r.achx) + cell(r.acl, r.aclx) + cell(r.valve, r.valvex) + '</tr>'; });
+  h += '</tbody></table></section>';
+  h += '<section class="card"><div class="kind">Remember</div><div class="note2"><ul>' +
+    '<li><b>Step 1, DVT prophylaxis:</b> compression devices from day 1; prophylactic heparin or enoxaparin 24–48 hr after onset once repeat CT stable (SAH: after aneurysm secured; craniotomy or EVD: per neurosurgery).</li>' +
+    '<li>*Valve: low-intensity heparin drip first (no bolus), then warfarin, with cardiology. Recent coronary stent after SDH: antiplatelet at 1 wk, with cardiology. VTE within 2 wk of bleed: IVC filter instead of early anticoagulation.</li>' +
+    '<li><b>All:</b> primary-prevention aspirin → stop; no antiplatelet + anticoagulant unless both needed; prefer DOAC; CT 2 wk after any anticoagulant restart; recurrence → LAA closure.</li>' +
+    '<li><b>Doses:</b> enoxaparin 40 mg daily (CrCl &lt; 30: 30 mg) or heparin 5,000 units SC q8h; apixaban 5 mg BID (2.5 mg if 2 of: age ≥80, weight ≤60 kg, creatinine ≥1.5); rivaroxaban 20 mg daily with evening meal (15 mg if CrCl ≤50); heparin drip ~12 units/kg/hr, aPTT 50–70 or anti-Xa 0.3–0.5 (NMH nomogram).</li>' +
+    '<li><b>High clot risk:</b> mechanical mitral or older valve; valve with prior stroke; AFib with CHA₂DS₂-VASc ≥5 or stroke within 3 mo; VTE within 3 mo; severe thrombophilia. Lower: everything else.</li></ul></div></section>';
+  view.innerHTML = h;
+}
+
+function painView() {
+  var h = '<div class="crumbs"><button data-home>All diseases</button><span>/</span><span>Headache and pain</span></div><h2>Headache and pain after procedures <span class="sub" style="font-size:.85rem;font-weight:400">· section 20</span></h2>';
+  h += '<section class="card"><div class="note2"><ul>' +
+    '<li><b>ER now:</b> sudden severe headache; headache with deficit, confusion or seizure; headache after a fall on blood thinners.</li>' +
+    '<li><b>First line:</b> acetaminophen 500 mg q6h → 1,000 mg q8h; max 3,000 mg/day (2,000 if liver disease or ≥3 drinks/day). NSAIDs only if no antiplatelet/anticoagulant, no SDH, no recent bleed: ibuprofen 400 mg q8h with food, up to 3 days.</li>' +
+    '<li><b>Second line:</b> flare (VSS stent, coils, flow diverter): Medrol Dosepak (avoid if uncontrolled diabetes, infection, SDH or CSF leak rebound). Persistent &gt; 2 wk: gabapentin 300 mg qhs, +300 mg every 3–5 days to 300 mg TID (max 1,800/day) or pregabalin 75 mg BID (max 150 BID); taper off over ≥1 wk.</li>' +
+    '<li>Avoid opioids and butalbital for headache; limit pain relievers to &lt; 10–15 days/month. No triptans after stroke, dissection, ICAD, moyamoya or a new arterial stent.</li>' +
+    '<li><b>Expected:</b> VSS stent-side headache, week 1, nearly all gone by 6 mo. Coils/FD: 1–2 wk; persistent or worse → MRI for swelling. CSF leak: worse lying down → rebound (Diamox); worse upright → persistent leak. SDH: any new or worse headache → CT now. Dissection: worse headache or neck pain → contrast MRA now.</li>' +
+    '<li>Not controlled or &gt; 2–4 wk: clinic visit, imaging per section. &gt; 3 mo or migraine pattern: headache clinic (may add nortriptyline (TCA) or other preventives).</li>' +
+    '<li><b>Non-headache:</b> access site acetaminophen and ice. Sclerotherapy swelling: elevate; significant → Medrol Dosepak; airway → 911. Spine: acetaminophen ± NSAIDs; gabapentin/pregabalin for radiating pain. Acute vertebral fracture: calcitonin 100 IU SC/IM daily (or 200 IU nasal), max 4 wk. Ketorolac 15–30 mg IV/IM q6h (15 mg if ≥65, &lt; 50 kg or kidney impairment; max 120/day, 60 if ≥65), 5 days total; not with DAPT, anticoagulant, SDH, bleed within 2 wk or kidney disease. Fracture pain not controlled: oxycodone 5 mg (2.5 mg if ≥75 or frail) or Norco 5/325 q6h prn, 3–5 days, max 20 tablets, bowel regimen, check PMP.</li>' +
+    '</ul></div></section>';
+  view.innerHTML = h;
+}
+
+function render(keepScroll) {
+  var s = state();
+  if (s.d === "restart") restartView();
+  else if (s.d === "pain") painView();
+  else { var d = byId(s.d); if (d) pathView(d, s.p); else home(); }
+  if (!keepScroll) window.scrollTo(0, 0);
+}
+
+view.addEventListener("click", function (e) {
+  var t = e.target.closest("button"); if (!t) return;
+  var s = state();
+  if (t.hasAttribute("data-home")) go("");
+  else if (t.dataset.d) go(t.dataset.d);
+  else if (t.dataset.p) go(s.d, t.dataset.p);
+  else if (t.dataset.k) { var k = t.dataset.k, j = +t.dataset.j; pick[k] = pick[k] === j ? null : j; render(true); }
+  else if (t.id === "reset") { pick = {}; render(true); }
+  else if (t.id === "copy") {
+    var ta = document.getElementById("out"), msg = document.getElementById("msg");
+    function ok() { msg.textContent = "Copied"; setTimeout(function () { msg.textContent = ""; }, 1500); }
+    if (navigator.clipboard && navigator.clipboard.writeText) navigator.clipboard.writeText(ta.value).then(ok, function () { ta.select(); document.execCommand("copy"); ok(); });
+    else { ta.select(); document.execCommand("copy"); ok(); }
+  }
+});
+q.addEventListener("input", function () { if (state().d) go(""); else home(); });
+d0.addEventListener("change", function () { render(true); });
+window.addEventListener("hashchange", function () { render(false); });
+render(false);
+</script>
+</body>
+</html>
