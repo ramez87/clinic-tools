@@ -85,7 +85,7 @@ table.rs th { font-size:.74rem; color:var(--muted); text-transform:uppercase; le
 
   <footer class="foot">
     <p>Built from claude/follow-up-protocols.md (2026-10-24: coils long-term imaging, MRA every 3–5 yr after 5 yr; flow diverter aspirin 325 to 12 mo, ICAD aspirin 325 lifelong, FMD every 2 yr, dissection plan). If the protocol changes, update the DATA block in this file. Not a substitute for clinical judgment.</p>
-    <p>Data version 2026-10-24b.</p>
+    <p>Data version 2026-10-24c (steps after a first scan read "N later" and are dated from the previous visit).</p>
   </footer>
 </div>
 
@@ -93,7 +93,7 @@ table.rs th { font-size:.74rem; color:var(--muted); text-transform:uppercase; le
 /* DATA
    Disease: id, sec (protocol section), group, name, short, paths[], notes[] (always shown), call (also-call line)
    Path: id, name, steps[]
-   Step: at ("2w","3m","1y","10d"; "" = no fixed time), k ("visit"|"img"|"med"|"note"), t (text), b (branch: {q, o:[{l, s:[steps]}]})
+   Step: at ("2w","3m","1y","10d"; "" = no fixed time), rel (1 = counted from the previous dated step, label "N later"), k ("visit"|"img"|"med"|"note"), t (text), b (branch: {q, o:[{l, s:[steps]}]})
    Plan bullets use t; steps with k:"note" are shown but not copied. */
 var D = [
 /* ---------- 1. ANEURYSMS ---------- */
@@ -140,7 +140,7 @@ var D = [
       {l:"Not occluded",s:[{at:"12m",k:"img",t:"DSA"},{at:"12m",k:"med",t:"Aspirin 325 → aspirin 81 for life"},
         {at:"",k:"note",t:"Branch",b:{q:"12-month DSA",o:[
           {l:"Occluded",s:[{at:"2y",k:"img",t:"cMRA/CTA head + clinic"},{at:"5y",k:"img",t:"cMRA/CTA head + clinic"}]},
-          {l:"Smaller",s:[{at:"24m",k:"img",t:"DSA"}]},
+          {l:"Smaller",s:[{at:"2y",k:"img",t:"DSA"}]},
           {l:"Unchanged or larger",s:[{at:"",k:"visit",t:"Discuss retreatment"}]}]}}]}]}}]},
   { id:"web", name:"WEB", steps:[
     {at:"",k:"med",t:"Aspirin 81 x 2 wk (1–3 mo if device protrusion or intraprocedural thrombus)"},
@@ -202,7 +202,7 @@ var D = [
   paths:[
   { id:"inc", name:"Incidental (any location)", steps:[{at:"1y",k:"img",t:"MRI brain + clinic"},{at:"",k:"note",t:"Then symptom-driven (brainstem/deep: low threshold to scan)"}]},
   { id:"bleed", name:"After a bleed", steps:[
-    {at:"3m",k:"img",t:"MRI brain + clinic"},{at:"15m",k:"img",t:"MRI brain + clinic"},{at:"27m",k:"img",t:"MRI brain + clinic"},
+    {at:"3m",k:"img",t:"MRI brain + clinic"},{at:"1y",rel:1,k:"img",t:"MRI brain + clinic"},{at:"1y",rel:1,k:"img",t:"MRI brain + clinic"},
     {at:"",k:"note",t:"Then symptom-driven. Brainstem bleed → neurosurgery"}]}
 ]},
 /* ---------- 5. SDH ---------- */
@@ -247,7 +247,7 @@ var D = [
     {at:"2w",k:"visit",t:"Clinic"},
     {at:"1m",k:"img",t:"Duplex + clinic (CTA or cMRA if high in the neck or vertebral)"},
     {at:"3m",k:"med",t:"Stop Plavix; aspirin 81 for life"},
-    {at:"6m",k:"img",t:"Duplex + clinic"},{at:"12m",k:"img",t:"Duplex + clinic"},{at:"18m",k:"img",t:"Duplex"},{at:"24m",k:"img",t:"Duplex"},
+    {at:"6m",k:"img",t:"Duplex + clinic"},{at:"12m",k:"img",t:"Duplex + clinic"},{at:"6m",rel:1,k:"img",t:"Duplex"},{at:"2y",k:"img",t:"Duplex"},
     {at:"",k:"img",t:"Then duplex yearly until stable, then every 2 yr for life"},
     {at:"",k:"note",t:"High risk (diabetes, neck radiation, prior in-stent restenosis, heavy calcification): every 6 mo until stable. In-stent restenosis ≥70% or symptoms → CTA, discuss retreatment"}]}
 ]},
@@ -288,7 +288,7 @@ var D = [
     {at:"",k:"img",t:"Once, if not done: CTA or cMRA head to pelvis"},
     {at:"",k:"med",t:"Aspirin 81 unless contraindicated"},
     {at:"",k:"note",t:"Blood pressure: PCP; renal FMD or hard-to-control BP → nephrology or hypertension clinic"},
-    {at:"2y",k:"img",t:"CTA or cMRA neck + clinic"},{at:"4y",k:"img",t:"CTA or cMRA neck + clinic"},
+    {at:"2y",k:"img",t:"CTA or cMRA neck + clinic"},{at:"2y",rel:1,k:"img",t:"CTA or cMRA neck + clinic"},
     {at:"",k:"note",t:"Then every 2 yr; extend to 5 yr after repeated stability. New neck pain, headache, Horner or neurologic symptoms → imaging now"}]}
 ]},
 /* ---------- 10. MOYAMOYA ---------- */
@@ -299,7 +299,7 @@ var D = [
   call:"Brief weakness, numbness or speech problems.",
   paths:[
   { id:"med", name:"Medical management", steps:[
-    {at:"3m",k:"visit",t:"Clinic (new symptoms that need expedited imaging?)"},{at:"1y",k:"img",t:"MRI brain + TOF MRA + clinic"},{at:"3y",k:"img",t:"MRI brain + TOF MRA + clinic"},
+    {at:"3m",k:"visit",t:"Clinic (new symptoms that need expedited imaging?)"},{at:"1y",k:"img",t:"MRI brain + TOF MRA + clinic"},{at:"2y",rel:1,k:"img",t:"MRI brain + TOF MRA + clinic"},
     {at:"",k:"note",t:"Then every 2 yr. New symptoms, silent infarct or progression → repeat perfusion → neurosurgery for bypass"}]},
   { id:"byp", name:"After bypass, establishing care", steps:[
     {at:"",k:"img",t:"Outside records; MRI + TOF MRA + perfusion at first visit; DSA only if none since surgery or new symptoms"},
@@ -374,7 +374,7 @@ var D = [
     {at:"12m",k:"img",t:"MRI spine + first-pass contrast MRA + clinic"},
     {at:"",k:"note",t:"DSA sooner if symptoms worsen or MRA abnormal"}]},
   { id:"cobs", name:"Spinal cord AVM, observed", steps:[
-    {at:"2w",k:"visit",t:"Clinic (after angiogram)"},{at:"6m",k:"img",t:"MRI spine + clinic"},{at:"1y",k:"img",t:"MRI spine + clinic"},{at:"3y",k:"img",t:"MRI spine + clinic"},
+    {at:"2w",k:"visit",t:"Clinic (after angiogram)"},{at:"6m",k:"img",t:"MRI spine + clinic"},{at:"1y",k:"img",t:"MRI spine + clinic"},{at:"2y",rel:1,k:"img",t:"MRI spine + clinic"},
     {at:"",k:"note",t:"Then every 2 yr; DSA if symptoms or MRI change"}]},
   { id:"ctx", name:"Spinal cord AVM, treated", steps:[{at:"2w",k:"visit",t:"Clinic"},{at:"",k:"img",t:"DSA after each stage, then follow as observed"}]}
 ]},
@@ -463,22 +463,27 @@ function pathView(d, pid) {
   if (d.paths.length > 1) { h += '<div class="tabs" role="tablist">'; d.paths.forEach(function (x) { h += '<button class="tab" role="tab" aria-selected="' + (x === p) + '" data-p="' + x.id + '">' + esc(x.name) + '</button>'; }); h += '</div>'; }
   var items = walk(p.steps, key, []);
   h += '<section class="card"><div class="kind">' + esc(p.name) + '</div><div class="legend"><span class="lv">Visit</span><span class="li">Imaging</span><span class="lm">Medicine</span></div><ol class="tl">';
-  var plan = [];
+  var plan = [], prevD = b0, prevN = 0;
   items.forEach(function (s) {
     if (s.br) {
       h += '<li style="display:block;border:0;padding:0"><div class="br"><div class="q">' + esc(s.q) + '?</div><div class="tabs">' + s.o.map(function (o, j) { return '<button class="chip" aria-pressed="' + (s.sel === j) + '" data-k="' + s.key + '" data-j="' + j + '">' + esc(o.l) + '</button>'; }).join("") + '</div>' + (s.sel < 0 ? '<div class="sub" style="font-size:.85rem">Choose to see the next steps.</div>' : '') + '</div></li>';
       return;
     }
-    var dt = s.at ? addTo(b0, s.at) : null;
-    var when = s.at ? (dt ? fmt(dt) + '<small>' + esc(words(s.at)) + '</small>' : esc(words(s.at))) : '<small>' + (s.k === "note" ? "" : "now / ongoing") + '</small>';
+    var dt = null, n = 0, lab = s.at ? words(s.at) + (s.rel ? " later" : "") : "";
+    if (s.at) {
+      n = s.rel ? prevN + days(s.at) : days(s.at);
+      dt = s.rel ? (prevD ? addTo(prevD, s.at) : null) : addTo(b0, s.at);
+      prevN = n; prevD = dt;
+    }
+    var when = s.at ? (dt ? fmt(dt) + '<small>' + esc(lab) + '</small>' : esc(lab)) : '<small>' + (s.k === "note" ? "" : "now / ongoing") + '</small>';
     h += '<li class="' + s.k + '"><div class="when">' + when + '</div><div>' + esc(s.t) + '</div></li>';
-    if (s.k !== "note") plan.push({ at: s.at, t: s.t, dt: dt });
+    if (s.k !== "note") plan.push({ at: s.at, t: s.t, dt: dt, n: n, lab: lab });
   });
   h += '</ol></section>';
   /* Plan bullets in the physician's style: * Text (date) or * Text in N months */
-  var dated = plan.filter(function (x) { return x.at; }).sort(function (a, b) { return days(a.at) - days(b.at); });
+  var dated = plan.filter(function (x) { return x.at; }).sort(function (a, b) { return a.n - b.n; });
   var undated = plan.filter(function (x) { return !x.at; });
-  var lines = undated.concat(dated).map(function (x) { return "* " + x.t + (x.at ? (x.dt ? " (" + fmt(x.dt) + ")" : " in " + words(x.at)) : ""); });
+  var lines = undated.concat(dated).map(function (x) { return "* " + x.t + (x.at ? (x.dt ? " (" + fmt(x.dt) + ")" : (/later$/.test(x.lab) ? ", " + x.lab : " in " + x.lab)) : ""); });
   h += '<section class="card"><div class="kind">Plan bullets</div><textarea id="out" aria-label="Plan bullets">' + esc(lines.join("\n")) + '</textarea><div class="bar"><button class="btn" id="copy">Copy</button><button class="btn ghost" id="reset">Reset choices</button><span class="sub" id="msg" style="font-size:.85rem"></span></div></section>';
   if ((d.notes && d.notes.length) || d.call) {
     h += '<section class="card"><div class="kind">Remember</div><div class="note2"><ul>' + (d.notes || []).map(function (n) { return '<li>' + esc(n) + '</li>'; }).join("") + (d.call ? '<li><b>Also call:</b> ' + esc(d.call) + '</li>' : '') + '</ul></div></section>';
