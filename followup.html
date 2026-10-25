@@ -84,8 +84,8 @@ table.rs th { font-size:.74rem; color:var(--muted); text-transform:uppercase; le
   <main id="view" aria-live="polite"></main>
 
   <footer class="foot">
-    <p>Built from claude/follow-up-protocols.md (2026-10-24: VSS aspirin 81 from 3 to 6 mo; coils long-term imaging, MRA every 3–5 yr after 5 yr; flow diverter aspirin 325 to 12 mo, ICAD aspirin 325 lifelong, FMD every 2 yr, dissection plan). If the protocol changes, update the DATA block in this file. Not a substitute for clinical judgment.</p>
-    <p>Data version 2026-10-24d (VSS aspirin 81 from 3 to 6 mo) (steps after a first scan read "N later" and are dated from the previous visit).</p>
+    <p>Built from claude/follow-up-protocols.md (2026-10-25: sections 22–26 added — CVT, hemorrhage with negative workup incl. superficial siderosis, tumor embolization, BTO/parent vessel occlusion, pediatric vein of Galen and pial AVF. 2026-10-24: VSS aspirin 81 from 3 to 6 mo; coils long-term imaging, MRA every 3–5 yr after 5 yr; flow diverter aspirin 325 to 12 mo, ICAD aspirin 325 lifelong, FMD every 2 yr, dissection plan). If the protocol changes, update the DATA block in this file. Not a substitute for clinical judgment.</p>
+    <p>Data version 2026-10-25a (sections 22–26 added) (steps after a first scan read "N later" and are dated from the previous visit).</p>
   </footer>
 </div>
 
@@ -394,7 +394,97 @@ var D = [
     {at:"2w",k:"visit",t:"Clinic or video (wound, early response, red flags); PT may restart"},
     {at:"3m",k:"visit",t:"Leg and back NRS, walking distance, standing time (televisit OK)"},
     {at:"1y",k:"visit",t:"Leg and back NRS, walking distance, standing time"},
-    {at:"",k:"note",t:"No routine imaging. Recurrent or worse symptoms: MRI + spine surgery opinion"}]}]}
+    {at:"",k:"note",t:"No routine imaging. Recurrent or worse symptoms: MRI + spine surgery opinion"}]}]},
+/* ---------- 22. CVT ---------- */
+{ id:"cvt", sec:22, group:"Venous, hemorrhage, tumor and pediatric", name:"Cerebral venous thrombosis", short:"Anticoagulation, rescue thrombectomy",
+  notes:["Anticoagulation (neurology leads; hematology as needed): at least 3 mo; 3–6 mo after a transient trigger, 6–12 mo if unprovoked; indefinite if recurrent or high-risk thrombophilia.",
+         "Residual clot alone does not decide duration. Papilledema or vision symptoms: neuro-ophthalmology."],
+  call:"Worse headache, vision change. 911: new weakness, seizure, confusion or sleepiness, major bleeding.",
+  paths:[
+  { id:"med", name:"Medical management", steps:[
+    {at:"",k:"med",t:"Anticoagulation per neurology (at least 3 mo)"},
+    {at:"3m",k:"img",t:"CTV or contrast MRV + clinic (3–6 mo)"}]},
+  { id:"evt", name:"After rescue thrombectomy", steps:[
+    {at:"",k:"med",t:"Anticoagulation per neurology (at least 3 mo)"},
+    {at:"2w",k:"visit",t:"Clinic"},
+    {at:"3m",k:"img",t:"CTV or contrast MRV + clinic (3–6 mo)"}]}
+]},
+/* ---------- 23. HEMORRHAGE WITH NEGATIVE WORKUP ---------- */
+{ id:"neg", sec:23, group:"Venous, hemorrhage, tumor and pediatric", name:"Hemorrhage with negative workup", short:"SAH, ICH/IVH, superficial siderosis",
+  notes:["Start date = the bleed (SAH, ICH) or the source repair (siderosis).",
+         "Siderosis: brain and cord iron does not clear after repair; unchanged siderosis on MRI is expected — judge by the spine collection and symptoms. MRI only for new or worse hearing, balance, gait or cord symptoms.",
+         "Deferiprone: specialist prescriber sets dose and blood monitoring."],
+  call:"Headache returns or changes, hearing or balance worse. 911: sudden severe headache, new weakness, speech or vision change, seizure, confusion or sleepiness.",
+  paths:[
+  { id:"nps", name:"Nonperimesencephalic (diffuse) SAH, negative first DSA", steps:[
+    {at:"",k:"img",t:"Repeat DSA during the admission (about 1–2 wk) + MRI brain and C-spine"},
+    {at:"",k:"note",t:"Branch",b:{q:"Repeat DSA",o:[
+      {l:"Source found",s:[{at:"",k:"visit",t:"Treat; follow that disease's pathway"}]},
+      {l:"Still negative",s:[{at:"3m",k:"img",t:"TOF MRA head + clinic"},{at:"",k:"note",t:"Negative → symptom-driven"}]}]}}]},
+  { id:"pms", name:"Perimesencephalic SAH", steps:[
+    {at:"",k:"note",t:"Adequate negative CTA or DSA: no further vascular imaging"},
+    {at:"3m",k:"visit",t:"Clinic (recovery)"}]},
+  { id:"ich", name:"Unexplained ICH or IVH", steps:[
+    {at:"3m",k:"img",t:"MRI brain with and without contrast + clinic (after the blood resolves)"},
+    {at:"",k:"note",t:"Branch",b:{q:"Suspicion after a negative DSA",o:[
+      {l:"Remains",s:[{at:"3m",k:"img",t:"Repeat DSA (3–6 mo)"}]},
+      {l:"Low",s:[]}]}}]},
+  { id:"ss", name:"Superficial siderosis", steps:[
+    {at:"",k:"img",t:"Baseline: MRI brain (SWI) + whole spine MRI; audiology"},
+    {at:"",k:"note",t:"Branch",b:{q:"Source",o:[
+      {l:"Repaired (patch, surgery or CVF embolization)",s:[
+        {at:"3m",k:"img",t:"MRI spine and brain + clinic"},
+        {at:"",k:"note",t:"Branch",b:{q:"3-month spine MRI",o:[
+          {l:"Collection gone",s:[]},
+          {l:"Collection still present",s:[{at:"6m",k:"img",t:"MRI spine + clinic"}]}]}},
+        {at:"1y",k:"visit",t:"Clinic + audiology, then yearly"}]},
+      {l:"No source found",s:[
+        {at:"1y",k:"visit",t:"Clinic + audiology, then yearly"},
+        {at:"",k:"note",t:"Repeat targeted imaging only for a specific question"}]}]}}]}
+]},
+/* ---------- 24. TUMOR EMBOLIZATION ---------- */
+{ id:"tum", sec:24, group:"Venous, hemorrhage, tumor and pediatric", name:"Tumor embolization", short:"Before surgery; observed tumors",
+  notes:["No routine NIR visit (exception to the 2-week rule: the surgeon sees the patient). NIR clinic only for a complication (new deficit, cranial nerve symptoms, swelling or skin injury).",
+         "Secreting paraganglioma: endocrine preparation before any intervention."],
+  call:"New facial pain or numbness, voice or swallowing change, vision change. 911: new weakness, trouble breathing, sudden severe headache; spinal tumor: sudden leg weakness or loss of bladder or bowel control.",
+  paths:[
+  { id:"pre", name:"Embolization before surgery", steps:[
+    {at:"",k:"visit",t:"Surgery usually 24–72 hr after embolization (JNA: 24–48 hr, agreed with ENT); the surgeon follows"}]},
+  { id:"obs", name:"Observed tumor (paraganglioma, meningioma)", steps:[
+    {at:"",k:"note",t:"Surveillance per the treating team"}]}
+]},
+/* ---------- 25. BTO / PARENT VESSEL OCCLUSION ---------- */
+{ id:"bto", sec:25, group:"Venous, hemorrhage, tumor and pediatric", name:"Balloon test occlusion / parent vessel occlusion", short:"BTO alone, after permanent occlusion",
+  call:"New headache, eye or face pain. 911: new weakness, numbness, speech or vision change (highest risk in the first days).",
+  paths:[
+  { id:"bto", name:"BTO alone", steps:[
+    {at:"",k:"note",t:"Result to the treating surgeon; no routine NIR visit (exception to the 2-week rule) unless occlusion is planned"}]},
+  { id:"pvo", name:"After permanent occlusion", steps:[
+    {at:"",k:"note",t:"Inpatient: avoid low blood pressure, keep hydrated, neuro checks (delayed ischemia)"},
+    {at:"2w",k:"visit",t:"Clinic"},
+    {at:"6m",k:"img",t:"TOF MRA head (cMRA if coils obscure it)"},
+    {at:"",k:"note",t:"Branch",b:{q:"6-month MRA",o:[
+      {l:"Thrombosed, no refilling",s:[{at:"1y",k:"img",t:"MRA head + clinic"},{at:"",k:"img",t:"Then MRA every 3–5 yr for at least 10 yr (de novo aneurysms)"}]},
+      {l:"Refilling through collaterals",s:[{at:"",k:"img",t:"DSA"}]}]}}]}
+]},
+/* ---------- 26. PEDIATRIC VOGM / PIAL AVF ---------- */
+{ id:"peds", sec:26, group:"Venous, hemorrhage, tumor and pediatric", name:"Pediatric vein of Galen / pial AV fistula", short:"Staged embolization, closed fistula",
+  notes:["Co-followed with the pediatric team (neurology, cardiology, neonatal or critical care): development, head size, heart function, hydrocephalus.",
+         "Pial AVF with skin findings, other vascular lesions or family history: genetics referral (HHT, RASA1)."],
+  call:"Vomiting, faster head growth, poor feeding, new weakness. 911: breathing trouble, seizure, less responsive.",
+  paths:[
+  { id:"vogm", name:"Vein of Galen, staged embolization", steps:[
+    {at:"2w",k:"visit",t:"Clinic after each session"},
+    {at:"3m",k:"img",t:"MRI brain"},
+    {at:"",k:"note",t:"Branch",b:{q:"Plan",o:[
+      {l:"More stages",s:[{at:"",k:"img",t:"DSA before each next stage"}]},
+      {l:"Last stage done",s:[{at:"1y",k:"img",t:"DSA"},{at:"",k:"img",t:"Then MRI brain + MRA yearly through childhood; DSA if MRI changes"}]}]}}]},
+  { id:"pavf", name:"Pial AVF, closed", steps:[
+    {at:"2w",k:"visit",t:"Clinic"},
+    {at:"6m",k:"img",t:"DSA (new dural fistulas can form along the old drainage)"},
+    {at:"1y",k:"img",t:"DSA"},
+    {at:"",k:"img",t:"Then DSA every 5 yr until age 21"}]}
+]}
 ];
 
 /* Section 21: restart after intracranial hemorrhage (antiplatelet, anticoagulant high / lower clot risk, mechanical valve) */
