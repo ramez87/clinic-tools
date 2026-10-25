@@ -84,8 +84,8 @@ table.rs th { font-size:.74rem; color:var(--muted); text-transform:uppercase; le
   <main id="view" aria-live="polite"></main>
 
   <footer class="foot">
-    <p>Built from claude/follow-up-protocols.md (2026-10-25: sections 22–26 added — CVT, hemorrhage with negative workup incl. superficial siderosis, tumor embolization, BTO/parent vessel occlusion, pediatric vein of Galen and pial AVF. 2026-10-24: VSS aspirin 81 from 3 to 6 mo; coils long-term imaging, MRA every 3–5 yr after 5 yr; flow diverter aspirin 325 to 12 mo, ICAD aspirin 325 lifelong, FMD every 2 yr, dissection plan). If the protocol changes, update the DATA block in this file. Not a substitute for clinical judgment.</p>
-    <p>Data version 2026-10-25a (sections 22–26 added) (steps after a first scan read "N later" and are dated from the previous visit).</p>
+    <p>Built from claude/follow-up-protocols.md (2026-10-25: new sections 20–24 — CVT, hemorrhage with negative workup incl. superficial siderosis, tumor embolization, BTO/parent vessel occlusion, pediatric vein of Galen and pial AVF; headache and pain now 25, blood thinners restart now 26. 2026-10-24: VSS aspirin 81 from 3 to 6 mo; coils long-term imaging, MRA every 3–5 yr after 5 yr; flow diverter aspirin 325 to 12 mo, ICAD aspirin 325 lifelong, FMD every 2 yr, dissection plan). If the protocol changes, update the DATA block in this file. Not a substitute for clinical judgment.</p>
+    <p>Data version 2026-10-25b (sections renumbered: new 20–24; pain 25; blood thinners 26) (steps after a first scan read "N later" and are dated from the previous visit).</p>
   </footer>
 </div>
 
@@ -197,7 +197,7 @@ var D = [
   notes:["MRI: T1, T2, SWI (GRE only if no SWI); same sequence each time; contrast at baseline only (DVA).",
          "Bleed = new symptoms + recent blood; hemosiderin rim alone is NOT a bleed. Growth or new blood without symptoms: follow as a bleed.",
          "Multiple lesions or family history: genetics (CCM1/2/3), spine MRI once, screening MRI (SWI) for first-degree relatives.",
-         "Blood thinners: no recent bleed → do not withhold; after a bleed → hold, restart after stable MRI as deep IPH (section 21)."],
+         "Blood thinners: no recent bleed → do not withhold; after a bleed → hold, restart after stable MRI as deep IPH (section 26)."],
   call:"Double vision, balance problems.",
   paths:[
   { id:"inc", name:"Incidental (any location)", steps:[{at:"1y",k:"img",t:"MRI brain + clinic"},{at:"",k:"note",t:"Then symptom-driven (brainstem/deep: low threshold to scan)"}]},
@@ -209,7 +209,7 @@ var D = [
 { id:"sdh", sec:5, group:"Neurovascular", name:"Chronic subdural hematoma / MMA", short:"Observed, standalone MMA, after surgery",
   notes:["Large = ≥15 mm thick or midline shift ≥5 mm. Stop when resolved (≤3 mm) or small stable residual without symptoms at 6 mo. Growing or new symptoms: CT now, discuss rescue surgery.",
          "Atorvastatin 20 mg nightly x 8 wk: option for observed or non-surgical patients (ATOCH); no dexamethasone.",
-         "Blood thinners: hold all at discharge; restart at the 2-week CT visit per section 21."],
+         "Blood thinners: hold all at discharge; restart at the 2-week CT visit per section 26."],
   call:"Confusion, sleepiness, fall or head injury.",
   paths:[
   { id:"obs", name:"Observed", steps:[
@@ -395,8 +395,8 @@ var D = [
     {at:"3m",k:"visit",t:"Leg and back NRS, walking distance, standing time (televisit OK)"},
     {at:"1y",k:"visit",t:"Leg and back NRS, walking distance, standing time"},
     {at:"",k:"note",t:"No routine imaging. Recurrent or worse symptoms: MRI + spine surgery opinion"}]}]},
-/* ---------- 22. CVT ---------- */
-{ id:"cvt", sec:22, group:"Venous, hemorrhage, tumor and pediatric", name:"Cerebral venous thrombosis", short:"Anticoagulation, rescue thrombectomy",
+/* ---------- 20. CVT ---------- */
+{ id:"cvt", sec:20, group:"Venous, hemorrhage, tumor and pediatric", name:"Cerebral venous thrombosis", short:"Anticoagulation, rescue thrombectomy",
   notes:["Anticoagulation (neurology leads; hematology as needed): at least 3 mo; 3–6 mo after a transient trigger, 6–12 mo if unprovoked; indefinite if recurrent or high-risk thrombophilia.",
          "Residual clot alone does not decide duration. Papilledema or vision symptoms: neuro-ophthalmology."],
   call:"Worse headache, vision change. 911: new weakness, seizure, confusion or sleepiness, major bleeding.",
@@ -409,8 +409,8 @@ var D = [
     {at:"2w",k:"visit",t:"Clinic"},
     {at:"3m",k:"img",t:"CTV or contrast MRV + clinic (3–6 mo)"}]}
 ]},
-/* ---------- 23. HEMORRHAGE WITH NEGATIVE WORKUP ---------- */
-{ id:"neg", sec:23, group:"Venous, hemorrhage, tumor and pediatric", name:"Hemorrhage with negative workup", short:"SAH, ICH/IVH, superficial siderosis",
+/* ---------- 21. HEMORRHAGE WITH NEGATIVE WORKUP ---------- */
+{ id:"neg", sec:21, group:"Venous, hemorrhage, tumor and pediatric", name:"Hemorrhage with negative workup", short:"SAH, ICH/IVH, superficial siderosis",
   notes:["Start date = the bleed (SAH, ICH) or the source repair (siderosis).",
          "Siderosis: brain and cord iron does not clear after repair; unchanged siderosis on MRI is expected — judge by the spine collection and symptoms. MRI only for new or worse hearing, balance, gait or cord symptoms.",
          "Deferiprone: specialist prescriber sets dose and blood monitoring."],
@@ -442,8 +442,8 @@ var D = [
         {at:"1y",k:"visit",t:"Clinic + audiology, then yearly"},
         {at:"",k:"note",t:"Repeat targeted imaging only for a specific question"}]}]}}]}
 ]},
-/* ---------- 24. TUMOR EMBOLIZATION ---------- */
-{ id:"tum", sec:24, group:"Venous, hemorrhage, tumor and pediatric", name:"Tumor embolization", short:"Before surgery; observed tumors",
+/* ---------- 22. TUMOR EMBOLIZATION ---------- */
+{ id:"tum", sec:22, group:"Venous, hemorrhage, tumor and pediatric", name:"Tumor embolization", short:"Before surgery; observed tumors",
   notes:["No routine NIR visit (exception to the 2-week rule: the surgeon sees the patient). NIR clinic only for a complication (new deficit, cranial nerve symptoms, swelling or skin injury).",
          "Secreting paraganglioma: endocrine preparation before any intervention."],
   call:"New facial pain or numbness, voice or swallowing change, vision change. 911: new weakness, trouble breathing, sudden severe headache; spinal tumor: sudden leg weakness or loss of bladder or bowel control.",
@@ -453,8 +453,8 @@ var D = [
   { id:"obs", name:"Observed tumor (paraganglioma, meningioma)", steps:[
     {at:"",k:"note",t:"Surveillance per the treating team"}]}
 ]},
-/* ---------- 25. BTO / PARENT VESSEL OCCLUSION ---------- */
-{ id:"bto", sec:25, group:"Venous, hemorrhage, tumor and pediatric", name:"Balloon test occlusion / parent vessel occlusion", short:"BTO alone, after permanent occlusion",
+/* ---------- 23. BTO / PARENT VESSEL OCCLUSION ---------- */
+{ id:"bto", sec:23, group:"Venous, hemorrhage, tumor and pediatric", name:"Balloon test occlusion / parent vessel occlusion", short:"BTO alone, after permanent occlusion",
   call:"New headache, eye or face pain. 911: new weakness, numbness, speech or vision change (highest risk in the first days).",
   paths:[
   { id:"bto", name:"BTO alone", steps:[
@@ -467,8 +467,8 @@ var D = [
       {l:"Thrombosed, no refilling",s:[{at:"1y",k:"img",t:"MRA head + clinic"},{at:"",k:"img",t:"Then MRA every 3–5 yr for at least 10 yr (de novo aneurysms)"}]},
       {l:"Refilling through collaterals",s:[{at:"",k:"img",t:"DSA"}]}]}}]}
 ]},
-/* ---------- 26. PEDIATRIC VOGM / PIAL AVF ---------- */
-{ id:"peds", sec:26, group:"Venous, hemorrhage, tumor and pediatric", name:"Pediatric vein of Galen / pial AV fistula", short:"Staged embolization, closed fistula",
+/* ---------- 24. PEDIATRIC VOGM / PIAL AVF ---------- */
+{ id:"peds", sec:24, group:"Venous, hemorrhage, tumor and pediatric", name:"Pediatric vein of Galen / pial AV fistula", short:"Staged embolization, closed fistula",
   notes:["Co-followed with the pediatric team (neurology, cardiology, neonatal or critical care): development, head size, heart function, hydrocephalus.",
          "Pial AVF with skin findings, other vascular lesions or family history: genetics referral (HHT, RASA1)."],
   call:"Vomiting, faster head growth, poor feeding, new weakness. 911: breathing trouble, seizure, less responsive.",
@@ -487,7 +487,7 @@ var D = [
 ]}
 ];
 
-/* Section 21: restart after intracranial hemorrhage (antiplatelet, anticoagulant high / lower clot risk, mechanical valve) */
+/* Section 26: restart after intracranial hemorrhage (antiplatelet, anticoagulant high / lower clot risk, mechanical valve) */
 var RESTART = [
   { id:"sdh", l:"Chronic SDH, treated", ap:"2w", ach:"2w", acl:"4w", valve:"1w" },
   { id:"deep", l:"IPH, deep", ap:"2w", apx:"2–4 wk", ach:"2w", acl:"4w", valve:"2w" },
@@ -539,7 +539,7 @@ function home() {
     html += '<button class="item" data-d="' + d.id + '"><b>' + esc(d.name) + '</b><small>Section ' + d.sec + ' · ' + esc(d.short) + '</small></button>';
   });
   if (!term || "blood thinner restart hemorrhage bleed anticoagulant".indexOf(term) >= 0 || term.indexOf("restart") >= 0) {
-    html += (last ? "</div>" : "") + '<div class="grp">Blood thinners</div><div class="list"><button class="item" data-d="restart"><b>Restart after intracranial hemorrhage</b><small>Section 21 · antiplatelet, anticoagulant, valve</small></button><button class="item" data-d="pain"><b>Headache and pain after procedures</b><small>Section 20 · quick reference</small></button>';
+    html += (last ? "</div>" : "") + '<div class="grp">Blood thinners</div><div class="list"><button class="item" data-d="restart"><b>Restart after intracranial hemorrhage</b><small>Section 26 · antiplatelet, anticoagulant, valve</small></button><button class="item" data-d="pain"><b>Headache and pain after procedures</b><small>Section 25 · quick reference</small></button>';
     last = "x";
   }
   view.innerHTML = last ? html + "</div>" : '<p class="sub">No match.</p>';
@@ -583,7 +583,7 @@ function pathView(d, pid) {
 
 function restartView() {
   var b0 = base();
-  var h = '<div class="crumbs"><button data-home>All diseases</button><span>/</span><span>Restart after intracranial hemorrhage</span></div><h2>Blood thinners: restart after intracranial hemorrhage <span class="sub" style="font-size:.85rem;font-weight:400">· section 21</span></h2>';
+  var h = '<div class="crumbs"><button data-home>All diseases</button><span>/</span><span>Restart after intracranial hemorrhage</span></div><h2>Blood thinners: restart after intracranial hemorrhage <span class="sub" style="font-size:.85rem;font-weight:400">· section 26</span></h2>';
   h += '<p class="sub">Start date = bleed onset or treatment date. Always after a stable CT. Dates are the earliest default; adjust for the patient.</p>';
   h += '<section class="card"><table class="rs"><thead><tr><th>Bleed</th><th>Antiplatelet</th><th>Anticoagulant, high clot risk</th><th>Anticoagulant, lower clot risk</th><th>Mechanical valve*</th></tr></thead><tbody>';
   function cell(at, x) { var dt = at ? addTo(b0, at) : null; return '<td>' + esc(x || words(at)) + (dt ? '<br><b>' + fmt(dt) + '</b>' : '') + '</td>'; }
@@ -599,7 +599,7 @@ function restartView() {
 }
 
 function painView() {
-  var h = '<div class="crumbs"><button data-home>All diseases</button><span>/</span><span>Headache and pain</span></div><h2>Headache and pain after procedures <span class="sub" style="font-size:.85rem;font-weight:400">· section 20</span></h2>';
+  var h = '<div class="crumbs"><button data-home>All diseases</button><span>/</span><span>Headache and pain</span></div><h2>Headache and pain after procedures <span class="sub" style="font-size:.85rem;font-weight:400">· section 25</span></h2>';
   h += '<section class="card"><div class="note2"><ul>' +
     '<li><b>ER now:</b> sudden severe headache; headache with deficit, confusion or seizure; headache after a fall on blood thinners.</li>' +
     '<li><b>First line:</b> acetaminophen 500 mg q6h → 1,000 mg q8h; max 3,000 mg/day (2,000 if liver disease or ≥3 drinks/day). NSAIDs only if no antiplatelet/anticoagulant, no SDH, no recent bleed: ibuprofen 400 mg q8h with food, up to 3 days.</li>' +
